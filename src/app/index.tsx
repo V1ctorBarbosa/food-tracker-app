@@ -1,7 +1,6 @@
 import { Redirect } from 'expo-router';
 
 import { useSession } from '@/entities/session';
-import { HomePage } from '@/pages/home/HomePage';
 
 export default function IndexRoute() {
   const session = useSession();
@@ -14,5 +13,5 @@ export default function IndexRoute() {
     return <Redirect href="/sign-in" />;
   }
 
-  return <HomePage user={session.user} />;
+  return <Redirect href="/today" />;
 }

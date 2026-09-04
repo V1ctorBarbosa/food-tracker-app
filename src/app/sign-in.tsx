@@ -11,7 +11,7 @@ export default function SignInRoute() {
   }
 
   if (session.status === 'signed-in') {
-    return <Redirect href="/" />;
+    return <Redirect href="/today" />;
   }
 
   return <SignInPage />;
