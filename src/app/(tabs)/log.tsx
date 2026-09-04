@@ -1,5 +1,5 @@
-import { ComingSoon } from '@/shared/ui/ComingSoon';
+import { LogMealTypePage } from '@/pages/log/LogMealTypePage';
 
 export default function LogRoute() {
-  return <ComingSoon title="Log" />;
+  return <LogMealTypePage />;
 }
