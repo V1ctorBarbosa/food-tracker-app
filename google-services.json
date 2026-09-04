@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "341004041149",
+    "project_id": "food-track-d7a9e",
+    "storage_bucket": "food-track-d7a9e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:341004041149:android:ea77ef8c59be08437f70d4",
+        "android_client_info": {
+          "package_name": "com.v1ctorbarbosa.foodtracker"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "341004041149-6ctj88nr54ec7gaqm3oqkvbi1ug2oal9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBJ7wS6Vibzw_9x789bMKSrzlUWxn4TDfc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "341004041149-6ctj88nr54ec7gaqm3oqkvbi1ug2oal9.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "341004041149-hhrd4ukdq3i3gepg0e272lvfb31ab0n0.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.v1ctorbarbosa.foodtracker"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
