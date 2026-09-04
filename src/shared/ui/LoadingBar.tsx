@@ -46,5 +46,8 @@ function LoadingSegment({ color, delayMs }: { color: string; delayMs: number }) 
 
   const animatedStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
 
-  return <Animated.View className="flex-1 rounded-full" style={[{ backgroundColor: color }, animatedStyle]} />;
+  // flex: 1 is set inline, not via the `flex-1` className: NativeWind's class-injected styles
+  // don't reliably survive alongside Reanimated's own style-prop handling on web, and a dropped
+  // flex-1 here collapses every segment to zero width -- invisible, not just unanimated.
+  return <Animated.View className="rounded-full" style={[{ flex: 1, backgroundColor: color }, animatedStyle]} />;
 }
