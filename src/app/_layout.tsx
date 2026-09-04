@@ -4,7 +4,7 @@ import {
   Archivo_600SemiBold,
   Archivo_700Bold,
 } from '@expo-google-fonts/archivo';
-import { BodoniModa_900Black } from '@expo-google-fonts/bodoni-moda';
+import { ArchivoBlack_400Regular } from '@expo-google-fonts/archivo-black';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
@@ -28,7 +28,7 @@ export default function RootLayout() {
     Archivo_500Medium,
     Archivo_600SemiBold,
     Archivo_700Bold,
-    BodoniModa_900Black,
+    ArchivoBlack_400Regular,
   });
   useRefetchOnAppFocus();
 

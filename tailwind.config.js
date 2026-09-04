@@ -6,7 +6,7 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        display: ['BodoniModa_900Black'],
+        display: ['ArchivoBlack_400Regular'],
         body: ['Archivo_400Regular'],
         'body-medium': ['Archivo_500Medium'],
         'body-semibold': ['Archivo_600SemiBold'],

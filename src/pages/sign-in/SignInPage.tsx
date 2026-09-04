@@ -3,6 +3,7 @@ import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { signInWithGoogle } from '@/features/auth';
+import { GoogleIcon } from '@/shared/ui/icons/GoogleIcon';
 
 const StripeColorClasses = [
   'bg-ft-calories',
@@ -56,7 +57,10 @@ export function SignInPage() {
           {isSigningIn ? (
             <ActivityIndicator color="#274F8C" />
           ) : (
-            <Text className="font-body-bold text-base text-ft-calories">Continue with Google</Text>
+            <>
+              <GoogleIcon />
+              <Text className="font-body-bold text-base text-ft-calories">Continue with Google</Text>
+            </>
           )}
         </Pressable>
 
