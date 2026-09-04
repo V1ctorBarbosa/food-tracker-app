@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useDashboardQuery } from '@/entities/dashboard';
@@ -11,6 +11,8 @@ import {
   formatLiters,
 } from '@/pages/today/model/dashboard-view';
 import { daysBefore, formatDateOnly } from '@/shared/lib/date';
+import { ErrorMessage } from '@/shared/ui/ErrorMessage';
+import { LoadingBar } from '@/shared/ui/LoadingBar';
 
 const DaysInWeek = 7;
 const WaterBarSegmentCount = 16;
@@ -30,7 +32,7 @@ export function TodayPage() {
   if (dashboardQuery.isPending || todaysMealsQuery.isPending) {
     return (
       <SafeAreaView className="flex-1 items-center justify-center bg-ft-bg">
-        <ActivityIndicator color="#274F8C" />
+        <LoadingBar />
       </SafeAreaView>
     );
   }
@@ -38,9 +40,7 @@ export function TodayPage() {
   if (dashboardQuery.isError || todaysMealsQuery.isError) {
     return (
       <SafeAreaView className="flex-1 items-center justify-center bg-ft-bg px-7">
-        <Text className="text-center font-body text-sm text-ft-carbs">
-          Could not load today&apos;s data. Pull down to try again, or check that the API is running.
-        </Text>
+        <ErrorMessage />
       </SafeAreaView>
     );
   }

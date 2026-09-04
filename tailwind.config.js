@@ -1,3 +1,10 @@
+const theme = require('./src/shared/config/theme.json');
+
+// Tailwind class colors are static at build time, so they always reflect the light palette for
+// now. theme.light and theme.dark are identical until a real dark palette is designed -- see
+// src/shared/config/theme.ts for the runtime useThemeColors() hook that will pick between them.
+const colors = theme.light;
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: 'class',
@@ -13,19 +20,19 @@ module.exports = {
         'body-bold': ['Archivo_700Bold'],
       },
       colors: {
-        'ft-bg': '#DCEAF8',
-        'ft-card': '#F2F1F8',
-        'ft-calories': '#274F8C',
-        'ft-calories-dark': '#3D65A6',
-        'ft-protein': '#BC5589',
-        'ft-carbs': '#B84C44',
-        'ft-fat': '#E6C43C',
-        'ft-water': '#6096C2',
-        'ft-water-dark': '#4B80AB',
-        'ft-weight': '#17402A',
-        'ft-muted': '#5E7E96',
-        'ft-muted-2': '#7A879B',
-        'ft-muted-3': '#9AA3B0',
+        'ft-bg': colors.background,
+        'ft-card': colors.card,
+        'ft-calories': colors.calories,
+        'ft-calories-dark': colors.caloriesDark,
+        'ft-protein': colors.protein,
+        'ft-carbs': colors.carbs,
+        'ft-fat': colors.fat,
+        'ft-water': colors.water,
+        'ft-water-dark': colors.waterDark,
+        'ft-weight': colors.weight,
+        'ft-muted': colors.textMuted,
+        'ft-muted-2': colors.textMuted2,
+        'ft-muted-3': colors.textMuted3,
       },
     },
   },

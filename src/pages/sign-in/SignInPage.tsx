@@ -3,6 +3,8 @@ import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { signInWithGoogle } from '@/features/auth';
+import { theme } from '@/shared/config/theme';
+import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { GoogleIcon } from '@/shared/ui/icons/GoogleIcon';
 
 const StripeColorClasses = [
@@ -55,7 +57,7 @@ export function SignInPage() {
           disabled={isSigningIn}
           className="h-[58px] flex-row items-center justify-center gap-3 rounded-2xl bg-ft-card disabled:opacity-60">
           {isSigningIn ? (
-            <ActivityIndicator color="#274F8C" />
+            <ActivityIndicator color={theme.light.calories} />
           ) : (
             <>
               <GoogleIcon />
@@ -68,9 +70,7 @@ export function SignInPage() {
           Google is the only sign-in method for now.{'\n'}Email and Apple come later.
         </Text>
 
-        {errorMessage !== null && (
-          <Text className="text-center font-body text-sm text-ft-carbs">{errorMessage}</Text>
-        )}
+        {errorMessage !== null && <ErrorMessage message={errorMessage} />}
       </View>
     </SafeAreaView>
   );

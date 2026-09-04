@@ -2,9 +2,7 @@ import { Redirect, Tabs } from 'expo-router';
 import { View } from 'react-native';
 
 import { useSession } from '@/entities/session';
-
-const ActiveColor = '#274F8C';
-const InactiveColor = '#B9C0CE';
+import { theme } from '@/shared/config/theme';
 
 export default function TabsLayout() {
   const session = useSession();
@@ -21,9 +19,9 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: ActiveColor,
-        tabBarInactiveTintColor: InactiveColor,
-        tabBarStyle: { backgroundColor: '#F2F1F8', borderTopColor: '#DCD8E6' },
+        tabBarActiveTintColor: theme.light.calories,
+        tabBarInactiveTintColor: theme.light.tabInactive,
+        tabBarStyle: { backgroundColor: theme.light.tabBarBackground, borderTopColor: theme.light.tabBarBorder },
         tabBarLabelStyle: { fontFamily: 'Archivo_700Bold', fontSize: 9, letterSpacing: 1, textTransform: 'uppercase' },
       }}>
       <Tabs.Screen
