@@ -1,0 +1,182 @@
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useState } from 'react';
+import { Pressable, ScrollView, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { useFoodsByIdsQuery } from '@/entities/food';
+import {
+  getMealTypeLabel,
+  useDeleteMealMutation,
+  useMealQuery,
+  useUpdateMealMutation,
+  type MealItem,
+  type MealItemRequest,
+} from '@/entities/meal';
+import { ErrorMessage } from '@/shared/ui/ErrorMessage';
+import { LoadingBar } from '@/shared/ui/LoadingBar';
+import { SwipeToDeleteRow } from '@/shared/ui/SwipeToDeleteRow';
+
+const DateTimeLabelFormatter = new Intl.DateTimeFormat('pt-BR', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+
+export function MealDetailPage() {
+  const router = useRouter();
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const [isEditingItems, setIsEditingItems] = useState(false);
+  const [wasMealDeleted, setWasMealDeleted] = useState(false);
+  const mealQuery = useMealQuery(id);
+  const updateMealMutation = useUpdateMealMutation();
+  const deleteMealMutation = useDeleteMealMutation();
+  const itemFoodIds = mealQuery.data?.items.map((item) => item.foodId) ?? [];
+  const foodsQuery = useFoodsByIdsQuery(itemFoodIds);
+
+  if (wasMealDeleted) {
+    return (
+      <SafeAreaView className="flex-1 bg-ft-bg">
+        <View className="flex-row items-center justify-between px-7 pt-4">
+          <Pressable onPress={() => router.push('/today')} hitSlop={12}>
+            <Text className="font-body-semibold text-sm text-ft-muted">← Hoje</Text>
+          </Pressable>
+        </View>
+        <View className="flex-1 items-center justify-center px-7">
+          <Text className="text-center font-body-semibold text-sm text-ft-muted-2">Refeição excluída.</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (mealQuery.isPending || foodsQuery.isPending) {
+    return (
+      <SafeAreaView className="flex-1 items-center justify-center bg-ft-bg">
+        <LoadingBar />
+      </SafeAreaView>
+    );
+  }
+
+  if (mealQuery.isError) {
+    return (
+      <SafeAreaView className="flex-1 items-center justify-center bg-ft-bg px-7">
+        <ErrorMessage />
+      </SafeAreaView>
+    );
+  }
+
+  const meal = mealQuery.data;
+
+  async function handleRemoveItem(itemToRemove: MealItem) {
+    const remainingItems: MealItemRequest[] = meal.items
+      .filter((item) => item.id !== itemToRemove.id)
+      .map((item) => ({ foodId: item.foodId, quantity: item.quantity, unit: item.unit, foodServingId: null, servingCount: null }));
+
+    if (remainingItems.length === 0) {
+      await deleteMealMutation.mutateAsync(meal.id);
+      setWasMealDeleted(true);
+      return;
+    }
+
+    await updateMealMutation.mutateAsync({ id: meal.id, request: { mealType: meal.mealType, items: remainingItems } });
+  }
+
+  return (
+    <SafeAreaView className="flex-1 bg-ft-bg">
+      <View className="flex-row items-center justify-between px-7 pt-4">
+        <Pressable onPress={() => router.push('/today')} hitSlop={12}>
+          <Text className="font-body-semibold text-sm text-ft-muted">← Hoje</Text>
+        </Pressable>
+        <Pressable
+          onPress={() => setIsEditingItems((previous) => !previous)}
+          hitSlop={12}
+          className={`rounded-full px-4 py-1.5 ${isEditingItems ? 'bg-ft-card' : 'bg-white'}`}>
+          <Text className={`font-body-bold text-sm ${isEditingItems ? 'text-ft-calories' : 'text-ft-carbs'}`}>
+            {isEditingItems ? 'Concluído' : 'Editar'}
+          </Text>
+        </Pressable>
+      </View>
+
+      <ScrollView className="flex-1" contentContainerClassName="gap-4 px-7 pt-4 pb-8" showsVerticalScrollIndicator={false}>
+        <Text className="font-body-bold text-xs uppercase tracking-widest text-ft-muted">
+          {DateTimeLabelFormatter.format(new Date(meal.loggedAt))}
+        </Text>
+        <Text className="font-display text-4xl uppercase text-ft-calories">{getMealTypeLabel(meal.mealType)}</Text>
+
+        <View className="flex-row items-baseline gap-2">
+          <Text className="font-display text-5xl text-ft-calories">{meal.totalCalories}</Text>
+          <Text className="font-body-semibold text-base text-ft-muted-2">kcal</Text>
+        </View>
+
+        <MacroBar protein={meal.totalProtein} carbs={meal.totalCarbs} fat={meal.totalFat} />
+
+        <View className="flex-row items-center justify-between">
+          <Text className="font-body-bold text-[10px] uppercase tracking-widest text-ft-muted-2">
+            {meal.items.length} {meal.items.length === 1 ? 'item' : 'itens'}
+          </Text>
+          {isEditingItems && (
+            <Text className="font-body-semibold text-[10px] text-ft-calories">Deslize para a esquerda para apagar</Text>
+          )}
+        </View>
+
+        <View className="gap-2.5">
+          {meal.items.map((item) => {
+            const foodName = foodsQuery.foodsById.get(item.foodId)?.name ?? '—';
+
+            if (!isEditingItems) {
+              return <MealItemRow key={item.id} item={item} foodName={foodName} />;
+            }
+
+            return (
+              <SwipeToDeleteRow key={item.id} onDelete={() => handleRemoveItem(item)}>
+                <MealItemRow item={item} foodName={foodName} />
+              </SwipeToDeleteRow>
+            );
+          })}
+        </View>
+
+        {(updateMealMutation.isError || deleteMealMutation.isError) && (
+          <ErrorMessage message="Não foi possível atualizar essa refeição. Tente novamente." />
+        )}
+
+        <Pressable
+          onPress={() => router.push({ pathname: '/add-food', params: { mealType: meal.mealType, mealId: meal.id } })}
+          className="h-[54px] items-center justify-center rounded-2xl border border-ft-calories bg-transparent">
+          <Text className="font-body-bold text-sm text-ft-calories">Adicionar item</Text>
+        </Pressable>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+function MacroBar({ protein, carbs, fat }: { protein: number; carbs: number; fat: number }) {
+  const total = protein + carbs + fat;
+  const proteinPercent = total > 0 ? (protein / total) * 100 : 0;
+  const carbsPercent = total > 0 ? (carbs / total) * 100 : 0;
+  const fatPercent = total > 0 ? (fat / total) * 100 : 0;
+
+  return (
+    <View className="gap-2">
+      <View className="h-2.5 flex-row overflow-hidden rounded-sm bg-ft-card">
+        <View className="bg-ft-protein" style={{ width: `${proteinPercent}%` }} />
+        <View className="bg-ft-carbs" style={{ width: `${carbsPercent}%` }} />
+        <View className="bg-ft-fat" style={{ width: `${fatPercent}%` }} />
+      </View>
+      <View className="flex-row gap-4">
+        <Text className="font-body-bold text-[10px] text-ft-protein">{Math.round(protein)}G PROTEÍNA</Text>
+        <Text className="font-body-bold text-[10px] text-ft-carbs">{Math.round(carbs)}G CARBOIDRATO</Text>
+        <Text className="font-body-bold text-[10px] text-ft-fat">{Math.round(fat)}G GORDURA</Text>
+      </View>
+    </View>
+  );
+}
+
+function MealItemRow({ item, foodName }: { item: MealItem; foodName: string }) {
+  return (
+    <View className="flex-row items-center justify-between rounded-2xl bg-ft-card px-4 py-3">
+      <View className="flex-1 gap-0.5">
+        <Text className="font-body-semibold text-sm text-ft-calories">{foodName}</Text>
+        <Text className="font-body text-xs text-ft-muted-2">
+          {item.quantity} {item.unit === 'Gram' ? 'g' : item.unit.toLowerCase()} · {Math.round(item.protein)}P /{' '}
+          {Math.round(item.carbs)}C / {Math.round(item.fat)}G
+        </Text>
+      </View>
+      <Text className="font-body-bold text-sm text-ft-calories">{item.calories}</Text>
+    </View>
+  );
+}

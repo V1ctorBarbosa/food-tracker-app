@@ -3,7 +3,7 @@ import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useDashboardQuery } from '@/entities/dashboard';
-import { useTodaysMealsQuery } from '@/entities/meal';
+import { getMealTypeLabel, useTodaysMealsQuery } from '@/entities/meal';
 import {
   calculateProgressPercent,
   countDistinctMealTypes,
@@ -13,12 +13,13 @@ import {
 import { daysBefore, formatDateOnly } from '@/shared/lib/date';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { LoadingBar } from '@/shared/ui/LoadingBar';
+import { SegmentedProgressBar } from '@/shared/ui/SegmentedProgressBar';
 
 const DaysInWeek = 7;
 const WaterBarSegmentCount = 16;
 
-const DateLabelFormatter = new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
-const WeekdayFormatter = new Intl.DateTimeFormat('en-US', { weekday: 'narrow' });
+const DateLabelFormatter = new Intl.DateTimeFormat('pt-BR', { weekday: 'long', month: 'short', day: 'numeric' });
+const WeekdayFormatter = new Intl.DateTimeFormat('pt-BR', { weekday: 'narrow' });
 
 export function TodayPage() {
   const router = useRouter();
@@ -72,25 +73,25 @@ export function TodayPage() {
             <Text className="font-body-bold text-xs uppercase tracking-widest text-ft-muted">
               {DateLabelFormatter.format(today)}
             </Text>
-            <Text className="font-display text-5xl uppercase text-ft-calories">Today</Text>
+            <Text className="font-display text-5xl uppercase text-ft-calories">Hoje</Text>
           </View>
           <Pressable
             onPress={() => router.push('/log')}
             className="h-[38px] w-[38px] items-center justify-center rounded-full bg-ft-calories">
-            <Text className="pb-0.5 text-xl text-white">+</Text>
+            <PlusIcon />
           </Pressable>
         </View>
 
         <View className="gap-4 rounded-[22px] bg-ft-calories p-5">
           <View className="flex-row items-baseline justify-between">
-            <Text className="font-body-bold text-xs uppercase tracking-widest text-blue-200">Calories</Text>
+            <Text className="font-body-bold text-xs uppercase tracking-widest text-blue-200">Calorias</Text>
             <Text className="font-body-semibold text-xs text-blue-200">
-              {caloriesRemaining >= 0 ? `${caloriesRemaining} left` : `${Math.abs(caloriesRemaining)} over`}
+              {caloriesRemaining >= 0 ? `${caloriesRemaining} restantes` : `${Math.abs(caloriesRemaining)} acima`}
             </Text>
           </View>
           <View className="flex-row items-baseline gap-2">
-            <Text className="font-display text-6xl text-white">{calories.toLocaleString('en-US')}</Text>
-            <Text className="font-display text-2xl text-blue-300">/ {dashboard.dailyCalorieTarget.toLocaleString('en-US')}</Text>
+            <Text className="font-display text-6xl text-white">{calories.toLocaleString('pt-BR')}</Text>
+            <Text className="font-display text-2xl text-blue-300">/ {dashboard.dailyCalorieTarget.toLocaleString('pt-BR')}</Text>
           </View>
           <View className="h-2.5 flex-row overflow-hidden rounded-sm bg-ft-calories-dark">
             <View
@@ -101,31 +102,31 @@ export function TodayPage() {
         </View>
 
         <View className="flex-row gap-2.5">
-          <MacroCard label="Protein" value={protein} target={dashboard.dailyProteinTargetGrams} colorClassName="text-ft-protein" barColorClassName="bg-ft-protein" />
-          <MacroCard label="Carbs" value={carbs} target={dashboard.dailyCarbsTargetGrams} colorClassName="text-ft-carbs" barColorClassName="bg-ft-carbs" />
-          <MacroCard label="Fat" value={fat} target={dashboard.dailyFatTargetGrams} colorClassName="text-ft-fat" barColorClassName="bg-ft-fat" />
+          <MacroCard label="Proteína" value={protein} target={dashboard.dailyProteinTargetGrams} colorClassName="text-ft-protein" barColorClassName="bg-ft-protein" />
+          <MacroCard label="Carboidrato" value={carbs} target={dashboard.dailyCarbsTargetGrams} colorClassName="text-ft-carbs" barColorClassName="bg-ft-carbs" />
+          <MacroCard label="Gordura" value={fat} target={dashboard.dailyFatTargetGrams} colorClassName="text-ft-fat" barColorClassName="bg-ft-fat" />
         </View>
 
-        <View className="gap-3 rounded-[20px] bg-ft-water p-4">
+        <Pressable onPress={() => router.push('/log-water')} className="gap-3 rounded-[20px] bg-ft-water p-4">
           <View className="flex-row items-baseline justify-between">
-            <Text className="font-body-bold text-xs uppercase tracking-widest text-sky-100">Water</Text>
+            <Text className="font-body-bold text-xs uppercase tracking-widest text-sky-100">Água</Text>
             <Text className="font-display text-xl text-white">
               {formatLiters(waterMilliliters)}
               <Text className="font-body-semibold text-xs"> / {formatLiters(dashboard.dailyWaterTargetMilliliters ?? 0)} L</Text>
             </Text>
           </View>
-          <View className="h-[26px] flex-row gap-1">
-            {Array.from({ length: WaterBarSegmentCount }, (_, segmentIndex) => {
-              const segmentThreshold = ((segmentIndex + 1) / WaterBarSegmentCount) * 100;
-              const isFilled = calculateProgressPercent(waterMilliliters, dashboard.dailyWaterTargetMilliliters) >= segmentThreshold;
-              return <View key={segmentIndex} className={`flex-1 rounded-sm ${isFilled ? 'bg-ft-water-dark' : 'bg-ft-card'}`} />;
-            })}
-          </View>
-        </View>
+          <SegmentedProgressBar
+            segmentCount={WaterBarSegmentCount}
+            progressPercent={calculateProgressPercent(waterMilliliters, dashboard.dailyWaterTargetMilliliters)}
+            filledColorClassName="bg-ft-water-dark"
+          />
+        </Pressable>
 
         <View className="flex-row gap-2.5">
-          <View className="flex-[1.15] gap-2 rounded-[18px] bg-ft-card px-4 py-3.5">
-            <Text className="font-body-bold text-[10px] uppercase tracking-widest text-ft-muted-2">Weight</Text>
+          <Pressable
+            onPress={() => router.push('/log-weight')}
+            className="flex-[1.15] gap-2 rounded-[18px] bg-ft-card px-4 py-3.5">
+            <Text className="font-body-bold text-[10px] uppercase tracking-widest text-ft-muted-2">Peso</Text>
             <View className="flex-row items-baseline gap-1.5">
               <Text className="font-display text-3xl text-ft-weight">
                 {dashboard.currentWeightKilograms?.toFixed(1) ?? '—'}
@@ -139,28 +140,52 @@ export function TodayPage() {
               )}
             </View>
             <Text className="font-body-semibold text-[10px] text-ft-muted-3">
-              Target {dashboard.targetWeightKilograms?.toFixed(1) ?? '—'} kg
+              Meta {dashboard.targetWeightKilograms?.toFixed(1) ?? '—'} kg
             </Text>
-          </View>
+          </Pressable>
 
           <View className="flex-1 gap-2 rounded-[18px] bg-ft-card px-4 py-3.5">
-            <Text className="font-body-bold text-[10px] uppercase tracking-widest text-ft-muted-2">Meals</Text>
+            <Text className="font-body-bold text-[10px] uppercase tracking-widest text-ft-muted-2">Refeições</Text>
             <Text className="font-display text-3xl text-ft-calories">
               {countDistinctMealTypes(loggedMealTypes)}
               <Text className="font-body text-base text-ft-muted-3"> / 4</Text>
             </Text>
             <Text className="font-body-semibold text-[10px] text-ft-muted-3">
-              {pendingMealType !== null ? `${pendingMealType} pending` : 'All logged'}
+              {pendingMealType !== null ? `${getMealTypeLabel(pendingMealType)} pendente` : 'Tudo registrado'}
             </Text>
           </View>
         </View>
 
+        {todaysMeals.length > 0 && (
+          <View className="gap-2">
+            <Text className="font-body-bold text-[10px] uppercase tracking-widest text-ft-muted-2">Refeições de hoje</Text>
+            {todaysMeals.map((meal) => (
+              <Pressable
+                key={meal.id}
+                onPress={() => router.push({ pathname: '/meal/[id]', params: { id: meal.id } })}
+                className="flex-row items-center justify-between rounded-[18px] bg-ft-card px-4 py-3">
+                <Text className="font-body-semibold text-sm text-ft-calories">{getMealTypeLabel(meal.mealType)}</Text>
+                <Text className="font-body-semibold text-sm text-ft-muted-2">{meal.totalCalories} kcal</Text>
+              </Pressable>
+            ))}
+          </View>
+        )}
+
         <View className="gap-2.5 rounded-[20px] bg-ft-card px-4 py-3.5 pb-3">
-          <Text className="font-body-bold text-[10px] uppercase tracking-widest text-ft-muted-2">Last 7 days · Calories</Text>
+          <Text className="font-body-bold text-[10px] uppercase tracking-widest text-ft-muted-2">Últimos 7 dias · Calorias</Text>
           <WeeklyCaloriesChart nutritionHistory={dashboard.nutritionHistory} />
         </View>
       </ScrollView>
     </SafeAreaView>
+  );
+}
+
+function PlusIcon() {
+  return (
+    <View className="h-3 w-3">
+      <View className="absolute left-[5px] top-0 h-3 w-[2px] rounded-full bg-white" />
+      <View className="absolute left-0 top-[5px] h-[2px] w-3 rounded-full bg-white" />
+    </View>
   );
 }
 
@@ -187,7 +212,7 @@ function MacroCard({
       <View className="h-[7px] overflow-hidden rounded-sm bg-black/10">
         <View className={barColorClassName} style={{ width: `${calculateProgressPercent(value, target)}%` }} />
       </View>
-      <Text className="font-body-semibold text-[10px] text-ft-muted-3">{target !== null ? `of ${target}g` : 'no target'}</Text>
+      <Text className="font-body-semibold text-[10px] text-ft-muted-3">{target !== null ? `de ${target}g` : 'sem meta'}</Text>
     </View>
   );
 }

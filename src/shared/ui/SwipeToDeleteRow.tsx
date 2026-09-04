@@ -1,0 +1,48 @@
+import type { ReactNode } from 'react';
+import { Pressable, Text, View } from 'react-native';
+import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
+import Animated, { FadeOut, useAnimatedStyle, type SharedValue } from 'react-native-reanimated';
+
+const RightActionWidthPx = 84;
+
+/**
+ * Swipe-left-to-delete, reused everywhere an entry can be removed (meal items, water entries,
+ * weight entries, whole meals). Requires `GestureHandlerRootView` at the app root (set in
+ * `app/_layout.tsx`) -- `ReanimatedSwipeable` doesn't work without it.
+ */
+export function SwipeToDeleteRow({ children, onDelete }: { children: ReactNode; onDelete: () => void | Promise<void> }) {
+  return (
+    <Animated.View exiting={FadeOut.duration(220)}>
+      <ReanimatedSwipeable
+        friction={2}
+        rightThreshold={RightActionWidthPx / 2}
+        renderRightActions={(_progress, translation) => <DeleteAction translation={translation} onPress={onDelete} />}>
+        {children}
+      </ReanimatedSwipeable>
+    </Animated.View>
+  );
+}
+
+function DeleteAction({ translation, onPress }: { translation: SharedValue<number>; onPress: () => void | Promise<void> }) {
+  // Keeps the action panel pinned to the row's revealed edge as the user drags, the same
+  // translation-following technique used in react-native-gesture-handler's own Swipeable docs.
+  const animatedStyle = useAnimatedStyle(() => ({ transform: [{ translateX: translation.value + RightActionWidthPx }] }));
+
+  return (
+    <Animated.View style={[{ width: RightActionWidthPx }, animatedStyle]}>
+      <Pressable onPress={onPress} className="ml-2 h-full items-center justify-center rounded-2xl bg-ft-carbs">
+        <TrashIcon />
+        <Text className="mt-1 font-body-bold text-[10px] uppercase tracking-widest text-white">Excluir</Text>
+      </Pressable>
+    </Animated.View>
+  );
+}
+
+function TrashIcon() {
+  return (
+    <View className="h-4 w-3.5">
+      <View className="absolute left-0 top-0 h-[2px] w-full rounded-full bg-white" />
+      <View className="absolute left-0 top-[3px] h-[11px] w-full rounded-b-md border border-t-0 border-white" />
+    </View>
+  );
+}
