@@ -26,7 +26,7 @@ export function SignInPage() {
     try {
       await signInWithGoogle();
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'Could not sign in. Please try again.');
+      setErrorMessage(error instanceof Error ? error.message : 'Não foi possível entrar. Tente novamente.');
     } finally {
       setIsSigningIn(false);
     }
@@ -46,7 +46,7 @@ export function SignInPage() {
             Food{'\n'}Track
           </Text>
           <Text className="max-w-[270px] font-body-medium text-base leading-6 text-ft-muted">
-            Log what you eat and drink. Watch the line move.
+            Registre o que você come e bebe. Veja a linha se mover.
           </Text>
         </View>
       </View>
@@ -61,13 +61,13 @@ export function SignInPage() {
           ) : (
             <>
               <GoogleIcon />
-              <Text className="font-body-bold text-base text-ft-calories">Continue with Google</Text>
+              <Text className="font-body-bold text-base text-ft-calories">Continuar com o Google</Text>
             </>
           )}
         </Pressable>
 
         <Text className="text-center font-body text-xs leading-5 text-ft-muted-2">
-          Google is the only sign-in method for now.{'\n'}Email and Apple come later.
+          Por enquanto, o Google é a única forma de entrar.{'\n'}Email e Apple chegam em breve.
         </Text>
 
         {errorMessage !== null && <ErrorMessage message={errorMessage} />}

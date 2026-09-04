@@ -29,7 +29,7 @@ export function YouPage({ user }: { user: User }) {
           onPress={handlePressSignOut}
           disabled={isSigningOut}
           className="rounded-full border border-ft-calories/20 px-6 py-3 disabled:opacity-60">
-          <Text className="font-body-bold text-base text-ft-calories">Sign out</Text>
+          <Text className="font-body-bold text-base text-ft-calories">Sair</Text>
         </Pressable>
       </View>
     </SafeAreaView>
