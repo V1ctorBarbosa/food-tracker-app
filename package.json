@@ -6,6 +6,7 @@
     "@expo-google-fonts/archivo": "^0.4.2",
     "@expo-google-fonts/archivo-black": "^0.4.1",
     "@expo/ui": "~57.0.15",
+    "@hookform/resolvers": "^5.9.1",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-google-signin/google-signin": "^16.1.5",
     "@tanstack/react-query": "^5.102.8",
@@ -26,6 +27,7 @@
     "nativewind": "^4.2.6",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "react-hook-form": "^7.87.0",
     "react-native": "0.86.3",
     "react-native-gesture-handler": "~2.32.0",
     "react-native-reanimated": "4.5.1",
@@ -33,7 +35,8 @@
     "react-native-screens": "~4.26.0",
     "react-native-svg": "15.15.4",
     "react-native-web": "~0.21.0",
-    "react-native-worklets": "0.10.1"
+    "react-native-worklets": "0.10.1",
+    "zod": "^4.5.4"
   },
   "devDependencies": {
     "@testing-library/react-native": "^14.0.1",
