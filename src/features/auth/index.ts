@@ -5,3 +5,4 @@
 // @ts-expect-error -- see comment above; Metro resolves this, tsc alone cannot.
 export { signInWithGoogle } from './google-sign-in/sign-in';
 export { signOutOfSession } from './sign-out';
+export { useAuthErrorRecovery } from './use-auth-error-recovery';
