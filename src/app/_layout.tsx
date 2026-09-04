@@ -1,4 +1,12 @@
+import {
+  Archivo_400Regular,
+  Archivo_500Medium,
+  Archivo_600SemiBold,
+  Archivo_700Bold,
+} from '@expo-google-fonts/archivo';
+import { BodoniModa_900Black } from '@expo-google-fonts/bodoni-moda';
 import { QueryClientProvider } from '@tanstack/react-query';
+import { useFonts } from 'expo-font';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
@@ -15,13 +23,26 @@ SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const session = useSession();
+  const [fontsLoaded] = useFonts({
+    Archivo_400Regular,
+    Archivo_500Medium,
+    Archivo_600SemiBold,
+    Archivo_700Bold,
+    BodoniModa_900Black,
+  });
   useRefetchOnAppFocus();
 
+  const isReady = fontsLoaded && session.status !== 'loading';
+
   useEffect(() => {
-    if (session.status !== 'loading') {
+    if (isReady) {
       SplashScreen.hideAsync();
     }
-  }, [session.status]);
+  }, [isReady]);
+
+  if (!isReady) {
+    return null;
+  }
 
   return (
     <QueryClientProvider client={queryClient}>

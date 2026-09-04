@@ -4,6 +4,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { signInWithGoogle } from '@/features/auth';
 
+const StripeColorClasses = [
+  'bg-ft-calories',
+  'bg-ft-protein',
+  'bg-ft-carbs',
+  'bg-ft-fat',
+  'bg-ft-weight',
+];
+
 export function SignInPage() {
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -22,25 +30,44 @@ export function SignInPage() {
   }
 
   return (
-    <SafeAreaView className="flex-1 items-center justify-center gap-6 bg-white px-6 dark:bg-black">
-      <Text className="text-center text-3xl font-semibold text-black dark:text-white">Food Track</Text>
-
-      <Pressable
-        onPress={handlePressSignIn}
-        disabled={isSigningIn}
-        className="min-w-56 flex-row items-center justify-center gap-2 rounded-full bg-blue-600 px-6 py-3 disabled:opacity-60">
-        {isSigningIn ? (
-          <ActivityIndicator color="white" />
-        ) : (
-          <Text className="text-base font-semibold text-white">Sign in with Google</Text>
-        )}
-      </Pressable>
-
-      {errorMessage !== null && (
-        <View>
-          <Text className="text-center text-sm text-red-600 dark:text-red-400">{errorMessage}</Text>
+    <SafeAreaView className="flex-1 bg-ft-bg">
+      <View className="flex-1 justify-center gap-8 px-7">
+        <View className="h-32 flex-row overflow-hidden rounded-2xl">
+          {StripeColorClasses.map((colorClassName) => (
+            <View key={colorClassName} className={`flex-1 ${colorClassName}`} />
+          ))}
         </View>
-      )}
+
+        <View className="gap-2">
+          <Text className="font-display text-6xl uppercase leading-[0.9] text-ft-calories">
+            Food{'\n'}Track
+          </Text>
+          <Text className="max-w-[270px] font-body-medium text-base leading-6 text-ft-muted">
+            Log what you eat and drink. Watch the line move.
+          </Text>
+        </View>
+      </View>
+
+      <View className="gap-3.5 px-7 pb-10">
+        <Pressable
+          onPress={handlePressSignIn}
+          disabled={isSigningIn}
+          className="h-[58px] flex-row items-center justify-center gap-3 rounded-2xl bg-ft-card disabled:opacity-60">
+          {isSigningIn ? (
+            <ActivityIndicator color="#274F8C" />
+          ) : (
+            <Text className="font-body-bold text-base text-ft-calories">Continue with Google</Text>
+          )}
+        </Pressable>
+
+        <Text className="text-center font-body text-xs leading-5 text-ft-muted-2">
+          Google is the only sign-in method for now.{'\n'}Email and Apple come later.
+        </Text>
+
+        {errorMessage !== null && (
+          <Text className="text-center font-body text-sm text-ft-carbs">{errorMessage}</Text>
+        )}
+      </View>
     </SafeAreaView>
   );
 }
