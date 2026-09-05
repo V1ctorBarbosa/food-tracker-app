@@ -1,6 +1,7 @@
 export type MeasurementUnit = 'Gram' | 'Kilogram' | 'Milliliter' | 'Liter';
 
-export type FoodSource = 'Usda' | 'OpenFoodFacts' | 'Custom';
+/** 'Usda' is retired (no longer queried live) but stays valid so an earlier-cached food still displays. */
+export type FoodSource = 'Usda' | 'OpenFoodFacts' | 'Custom' | 'Taco';
 
 export type FoodServing = {
   id: string;

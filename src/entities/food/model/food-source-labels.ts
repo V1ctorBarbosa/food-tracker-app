@@ -5,6 +5,7 @@ const FoodSourceLabels: Record<FoodSource, string> = {
   Usda: 'USDA',
   OpenFoodFacts: 'Marca',
   Custom: 'Personalizado',
+  Taco: 'TACO',
 };
 
 export function getFoodSourceLabel(source: FoodSource): string {
