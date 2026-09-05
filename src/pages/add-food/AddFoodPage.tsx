@@ -13,6 +13,7 @@ import {
   type MealItemRequest,
   type MealType,
 } from '@/entities/meal';
+import { isCustomFoodFormValid } from '@/pages/add-food/model/custom-food-form';
 import { calculateNutritionForQuantity } from '@/pages/add-food/model/nutrition-preview';
 import { theme } from '@/shared/config/theme';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
@@ -83,11 +84,13 @@ export function AddFoodPage() {
     setQuantityGrams(Math.max(MinimumQuantityGrams, parsedQuantity));
   }
 
-  const canSaveCustomFood =
-    customFoodName.trim().length > 0 &&
-    [customFoodCalories, customFoodProtein, customFoodCarbs, customFoodFat].every(
-      (value) => value.trim().length > 0 && !Number.isNaN(Number(value)),
-    );
+  const canSaveCustomFood = isCustomFoodFormValid({
+    name: customFoodName,
+    calories: customFoodCalories,
+    protein: customFoodProtein,
+    carbs: customFoodCarbs,
+    fat: customFoodFat,
+  });
 
   async function handleSaveCustomFood() {
     if (!canSaveCustomFood) {

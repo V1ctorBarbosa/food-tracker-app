@@ -6,9 +6,11 @@ import { useDashboardQuery } from '@/entities/dashboard';
 import { getMealTypeLabel, useTodaysMealsQuery } from '@/entities/meal';
 import {
   calculateProgressPercent,
+  calculateWeightDelta,
   countDistinctMealTypes,
   findNextPendingMealType,
   formatLiters,
+  getTodayNutrition,
 } from '@/pages/today/model/dashboard-view';
 import { daysBefore, formatDateOnly } from '@/shared/lib/date';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
@@ -48,22 +50,12 @@ export function TodayPage() {
 
   const dashboard = dashboardQuery.data;
   const todaysMeals = todaysMealsQuery.data;
-  const todayNutrition = dashboard.nutritionHistory.find((entry) => entry.date === todayDate);
-  const calories = todayNutrition?.calories ?? 0;
-  const protein = todayNutrition?.protein ?? 0;
-  const carbs = todayNutrition?.carbs ?? 0;
-  const fat = todayNutrition?.fat ?? 0;
-  const waterMilliliters = todayNutrition?.waterMilliliters ?? 0;
+  const { calories, protein, carbs, fat, waterMilliliters } = getTodayNutrition(dashboard.nutritionHistory, todayDate);
 
   const caloriesRemaining = dashboard.dailyCalorieTarget - calories;
   const loggedMealTypes = todaysMeals.map((meal) => meal.mealType);
   const pendingMealType = findNextPendingMealType(loggedMealTypes);
-  const weightHistory = [...dashboard.weightHistory].sort((a, b) => a.date.localeCompare(b.date));
-  const previousWeight = weightHistory.length >= 2 ? weightHistory[weightHistory.length - 2].weightKilograms : null;
-  const weightDelta =
-    previousWeight !== null && dashboard.currentWeightKilograms !== null
-      ? dashboard.currentWeightKilograms - previousWeight
-      : null;
+  const weightDelta = calculateWeightDelta(dashboard.weightHistory, dashboard.currentWeightKilograms);
 
   return (
     <SafeAreaView className="flex-1 bg-ft-bg">

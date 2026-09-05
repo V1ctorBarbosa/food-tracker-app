@@ -1,4 +1,13 @@
-import { calculateProgressPercent, countDistinctMealTypes, findNextPendingMealType, formatLiters } from './dashboard-view';
+import type { NutritionHistoryEntry, WeightHistoryEntry } from '@/entities/dashboard';
+
+import {
+  calculateProgressPercent,
+  calculateWeightDelta,
+  countDistinctMealTypes,
+  findNextPendingMealType,
+  formatLiters,
+  getTodayNutrition,
+} from './dashboard-view';
 
 describe('findNextPendingMealType', () => {
   test('returns the first meal type not yet logged, in canonical order', () => {
@@ -49,5 +58,70 @@ describe('calculateProgressPercent', () => {
 
   test('returns 0 when the target is zero, avoiding division by zero', () => {
     expect(calculateProgressPercent(50, 0)).toBe(0);
+  });
+});
+
+describe('getTodayNutrition', () => {
+  const nutritionHistory: NutritionHistoryEntry[] = [
+    { date: '2026-09-01', calories: 1800, protein: 120, carbs: 200, fat: 60, waterMilliliters: 1500 },
+    { date: '2026-09-02', calories: 2000, protein: 140, carbs: 220, fat: 65, waterMilliliters: 2000 },
+  ];
+
+  test("returns today's row when present", () => {
+    expect(getTodayNutrition(nutritionHistory, '2026-09-02')).toEqual({
+      calories: 2000,
+      protein: 140,
+      carbs: 220,
+      fat: 65,
+      waterMilliliters: 2000,
+    });
+  });
+
+  test('zero-fills every field when nothing has been logged today', () => {
+    expect(getTodayNutrition(nutritionHistory, '2026-09-03')).toEqual({
+      calories: 0,
+      protein: 0,
+      carbs: 0,
+      fat: 0,
+      waterMilliliters: 0,
+    });
+  });
+});
+
+describe('calculateWeightDelta', () => {
+  test('returns the change from the previous entry to the current weight', () => {
+    const weightHistory: WeightHistoryEntry[] = [
+      { date: '2026-09-01', weightKilograms: 88 },
+      { date: '2026-09-03', weightKilograms: 87.2 },
+    ];
+
+    expect(calculateWeightDelta(weightHistory, 86.5)).toBeCloseTo(-1.5, 5);
+  });
+
+  test('sorts an out-of-order history before picking the previous entry', () => {
+    const weightHistory: WeightHistoryEntry[] = [
+      { date: '2026-09-05', weightKilograms: 85 },
+      { date: '2026-09-01', weightKilograms: 88 },
+      { date: '2026-09-03', weightKilograms: 87.2 },
+    ];
+
+    // Sorted ascending, the previous entry is 2026-09-03 (87.2), not whatever sits
+    // second-to-last in the unsorted input array.
+    expect(calculateWeightDelta(weightHistory, 84.5)).toBeCloseTo(-2.7, 5);
+  });
+
+  test('returns null when there is no previous entry', () => {
+    const weightHistory: WeightHistoryEntry[] = [{ date: '2026-09-03', weightKilograms: 87.2 }];
+
+    expect(calculateWeightDelta(weightHistory, 87.2)).toBeNull();
+  });
+
+  test('returns null when there is no current weight', () => {
+    const weightHistory: WeightHistoryEntry[] = [
+      { date: '2026-09-01', weightKilograms: 88 },
+      { date: '2026-09-03', weightKilograms: 87.2 },
+    ];
+
+    expect(calculateWeightDelta(weightHistory, null)).toBeNull();
   });
 });

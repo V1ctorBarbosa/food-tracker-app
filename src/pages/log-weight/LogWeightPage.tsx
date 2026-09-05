@@ -10,6 +10,7 @@ import {
   useWeightHistoryQuery,
   type WeightEntry,
 } from '@/entities/weight-entry';
+import { buildWeightHistoryRows, calculateWeightDelta } from '@/pages/log-weight/model/weight-history-view';
 import {
   convertDisplayUnitToKilograms,
   convertKilogramsToDisplayUnit,
@@ -61,9 +62,7 @@ export function LogWeightPage() {
   const currentWeightKilograms = dashboardQuery.data.currentWeightKilograms;
   const targetWeightKilograms = dashboardQuery.data.targetWeightKilograms;
   const sortedHistory = weightHistoryQuery.data;
-  const previousWeightKilograms = sortedHistory.length >= 2 ? sortedHistory[sortedHistory.length - 2].weightKilograms : null;
-  const changeKilograms =
-    previousWeightKilograms !== null && currentWeightKilograms !== null ? currentWeightKilograms - previousWeightKilograms : null;
+  const changeKilograms = calculateWeightDelta(sortedHistory, currentWeightKilograms);
 
   const displayValue = convertKilogramsToDisplayUnit(weightKilograms, unit);
 
@@ -160,7 +159,7 @@ export function LogWeightPage() {
         {sortedHistory.length > 0 && (
           <View className="gap-2.5">
             <Text className="font-body-bold text-[10px] uppercase tracking-widest text-ft-muted-2">Histórico</Text>
-            {buildHistoryForDisplay(sortedHistory).map(({ entry, deltaKilograms }) => (
+            {buildWeightHistoryRows(sortedHistory).map(({ entry, deltaKilograms }) => (
               <SwipeToDeleteRow key={entry.id} onDelete={() => deleteWeightEntryMutation.mutateAsync(entry.id)}>
                 <WeightEntryRow entry={entry} deltaKilograms={deltaKilograms} />
               </SwipeToDeleteRow>
@@ -170,15 +169,6 @@ export function LogWeightPage() {
       </ScrollView>
     </SafeAreaView>
   );
-}
-
-function buildHistoryForDisplay(sortedHistory: WeightEntry[]): { entry: WeightEntry; deltaKilograms: number | null }[] {
-  const withDelta = sortedHistory.map((entry, index) => ({
-    entry,
-    deltaKilograms: index === 0 ? null : entry.weightKilograms - sortedHistory[index - 1].weightKilograms,
-  }));
-
-  return [...withDelta].reverse();
 }
 
 function StatCard({ label, value }: { label: string; value: string }) {
