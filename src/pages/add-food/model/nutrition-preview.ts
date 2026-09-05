@@ -9,7 +9,7 @@ export type NutritionPreview = {
 
 /**
  * Mirrors the backend's NutritionCalculator.Calculate (grams-only, matching food.baseUnitType
- * for every USDA-sourced food today) so the live preview shown here matches what gets saved.
+ * for every current food source) so the live preview shown here matches what gets saved.
  */
 export function calculateNutritionForQuantity(food: Food, quantityGrams: number): NutritionPreview {
   const ratio = quantityGrams / food.baseUnitQuantity;

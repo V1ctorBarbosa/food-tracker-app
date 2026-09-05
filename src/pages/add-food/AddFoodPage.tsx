@@ -4,7 +4,7 @@ import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, View } from 
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { Food } from '@/entities/food';
-import { getFoodSourceLabel, useCreateCustomFoodMutation, useFoodSearchQuery } from '@/entities/food';
+import { getFoodSourceLabel, getMeasurementUnitLabel, useCreateCustomFoodMutation, useFoodSearchQuery } from '@/entities/food';
 import {
   getMealTypeLabel,
   useCreateMealMutation,
@@ -14,7 +14,7 @@ import {
   type MealType,
 } from '@/entities/meal';
 import { isCustomFoodFormValid } from '@/pages/add-food/model/custom-food-form';
-import { calculateNutritionForQuantity } from '@/pages/add-food/model/nutrition-preview';
+import { calculateNutritionForQuantity, type NutritionPreview } from '@/pages/add-food/model/nutrition-preview';
 import { theme } from '@/shared/config/theme';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { LoadingBar } from '@/shared/ui/LoadingBar';
@@ -244,12 +244,7 @@ export function AddFoodPage() {
               </Pressable>
             </View>
 
-            <View className="flex-row gap-2">
-              <MacroPreviewChip label="Kcal" value={String(preview.calories)} className="bg-ft-card" textClassName="text-ft-calories" />
-              <MacroPreviewChip label="Prot" value={`${Math.round(preview.protein)}g`} className="bg-ft-protein" textClassName="text-white" />
-              <MacroPreviewChip label="Carb" value={`${Math.round(preview.carbs)}g`} className="bg-ft-carbs" textClassName="text-white" />
-              <MacroPreviewChip label="Gord" value={`${Math.round(preview.fat)}g`} className="bg-ft-fat" textClassName="text-ft-calories" />
-            </View>
+            <NutritionPreviewChips preview={preview} />
           </View>
         )}
 
@@ -267,6 +262,22 @@ export function AddFoodPage() {
         </Pressable>
       </ScrollView>
     </SafeAreaView>
+  );
+}
+
+function NutritionPreviewChips({ preview }: { preview: NutritionPreview }) {
+  const caloriesLabel = String(preview.calories);
+  const proteinLabel = `${Math.round(preview.protein)}g`;
+  const carbsLabel = `${Math.round(preview.carbs)}g`;
+  const fatLabel = `${Math.round(preview.fat)}g`;
+
+  return (
+    <View className="flex-row gap-2">
+      <MacroPreviewChip label="Kcal" value={caloriesLabel} className="bg-ft-card" textClassName="text-ft-calories" />
+      <MacroPreviewChip label="Prot" value={proteinLabel} className="bg-ft-protein" textClassName="text-white" />
+      <MacroPreviewChip label="Carb" value={carbsLabel} className="bg-ft-carbs" textClassName="text-white" />
+      <MacroPreviewChip label="Gord" value={fatLabel} className="bg-ft-fat" textClassName="text-ft-calories" />
+    </View>
   );
 }
 
@@ -349,6 +360,7 @@ function FoodSearchResults({
       <Text className="font-body-bold text-[10px] uppercase tracking-widest text-ft-muted-2">{query.data.length} resultados</Text>
       {query.data.map((food) => {
         const isSelected = food.id === selectedFoodId;
+        const baseUnitLabel = getMeasurementUnitLabel(food.baseUnitType);
         return (
           <Pressable
             key={food.id}
@@ -367,7 +379,7 @@ function FoodSearchResults({
               </View>
               <Text className={`font-body text-xs ${isSelected ? 'text-blue-200' : 'text-ft-muted-2'}`}>
                 {food.caloriesPerBaseUnit} kcal · {food.proteinPerBaseUnit}P / {food.carbsPerBaseUnit}C / {food.fatPerBaseUnit}G por{' '}
-                {food.baseUnitQuantity} {food.baseUnitType === 'Gram' ? 'g' : food.baseUnitType.toLowerCase()}
+                {food.baseUnitQuantity} {baseUnitLabel}
               </Text>
             </View>
             {isSelected && <Text className="font-body-bold text-base text-white">✓</Text>}

@@ -17,6 +17,7 @@ import {
   type WeightUnit,
 } from '@/pages/log-weight/model/weight-unit-conversion';
 import { daysBefore, formatDateOnly } from '@/shared/lib/date';
+import { formatSignedNumber } from '@/shared/lib/format';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { LoadingBar } from '@/shared/ui/LoadingBar';
 import { SwipeToDeleteRow } from '@/shared/ui/SwipeToDeleteRow';
@@ -64,6 +65,10 @@ export function LogWeightPage() {
   const sortedHistory = weightHistoryQuery.data;
   const changeKilograms = calculateWeightDelta(sortedHistory, currentWeightKilograms);
 
+  const lastEntryLabel = currentWeightKilograms === null ? '—' : `${currentWeightKilograms.toFixed(DisplayDecimalPlaces)} kg`;
+  const changeLabel = changeKilograms === null ? '—' : formatSignedNumber(changeKilograms, DisplayDecimalPlaces);
+  const targetLabel = targetWeightKilograms === null ? '—' : `${targetWeightKilograms.toFixed(DisplayDecimalPlaces)} kg`;
+
   const displayValue = convertKilogramsToDisplayUnit(weightKilograms, unit);
 
   function handleSelectUnit(nextUnit: WeightUnit) {
@@ -100,15 +105,9 @@ export function LogWeightPage() {
         <Text className="font-display text-4xl uppercase text-ft-calories">Peso</Text>
 
         <View className="flex-row gap-2.5">
-          <StatCard
-            label="Último registro"
-            value={currentWeightKilograms !== null ? `${currentWeightKilograms.toFixed(DisplayDecimalPlaces)} kg` : '—'}
-          />
-          <StatCard
-            label="Variação"
-            value={changeKilograms !== null ? `${changeKilograms >= 0 ? '+' : ''}${changeKilograms.toFixed(DisplayDecimalPlaces)}` : '—'}
-          />
-          <StatCard label="Meta" value={targetWeightKilograms !== null ? `${targetWeightKilograms.toFixed(DisplayDecimalPlaces)} kg` : '—'} />
+          <StatCard label="Último registro" value={lastEntryLabel} />
+          <StatCard label="Variação" value={changeLabel} />
+          <StatCard label="Meta" value={targetLabel} />
         </View>
 
         <View className="gap-4 rounded-[22px] bg-ft-weight p-5">
@@ -189,17 +188,16 @@ function UnitToggleButton({ label, isSelected, onPress }: { label: string; isSel
 }
 
 function WeightEntryRow({ entry, deltaKilograms }: { entry: WeightEntry; deltaKilograms: number | null }) {
+  const dateLabel = HistoryDateFormatter.format(new Date(entry.loggedAt));
+  const deltaLabel = deltaKilograms === null ? null : formatSignedNumber(deltaKilograms, DisplayDecimalPlaces);
+  const weightLabel = `${entry.weightKilograms.toFixed(DisplayDecimalPlaces)} kg`;
+
   return (
     <View className="flex-row items-center justify-between rounded-2xl bg-ft-card px-4 py-3">
-      <Text className="font-body-semibold text-sm text-ft-calories">{HistoryDateFormatter.format(new Date(entry.loggedAt))}</Text>
+      <Text className="font-body-semibold text-sm text-ft-calories">{dateLabel}</Text>
       <View className="flex-row items-center gap-3">
-        {deltaKilograms !== null && (
-          <Text className="font-body-semibold text-xs text-ft-muted-2">
-            {deltaKilograms >= 0 ? '+' : ''}
-            {deltaKilograms.toFixed(DisplayDecimalPlaces)}
-          </Text>
-        )}
-        <Text className="font-body-bold text-sm text-ft-weight">{entry.weightKilograms.toFixed(DisplayDecimalPlaces)} kg</Text>
+        {deltaLabel !== null && <Text className="font-body-semibold text-xs text-ft-muted-2">{deltaLabel}</Text>}
+        <Text className="font-body-bold text-sm text-ft-weight">{weightLabel}</Text>
       </View>
     </View>
   );

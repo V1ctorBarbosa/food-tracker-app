@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useFoodsByIdsQuery } from '@/entities/food';
+import { getMeasurementUnitLabel, useFoodsByIdsQuery } from '@/entities/food';
 import {
   getMealTypeLabel,
   useDeleteMealMutation,
@@ -149,6 +149,9 @@ function MacroBar({ protein, carbs, fat }: { protein: number; carbs: number; fat
   const proteinPercent = total > 0 ? (protein / total) * 100 : 0;
   const carbsPercent = total > 0 ? (carbs / total) * 100 : 0;
   const fatPercent = total > 0 ? (fat / total) * 100 : 0;
+  const proteinLabel = Math.round(protein);
+  const carbsLabel = Math.round(carbs);
+  const fatLabel = Math.round(fat);
 
   return (
     <View className="gap-2">
@@ -158,23 +161,23 @@ function MacroBar({ protein, carbs, fat }: { protein: number; carbs: number; fat
         <View className="bg-ft-fat" style={{ width: `${fatPercent}%` }} />
       </View>
       <View className="flex-row gap-4">
-        <Text className="font-body-bold text-[10px] text-ft-protein">{Math.round(protein)}G PROTEÍNA</Text>
-        <Text className="font-body-bold text-[10px] text-ft-carbs">{Math.round(carbs)}G CARBOIDRATO</Text>
-        <Text className="font-body-bold text-[10px] text-ft-fat">{Math.round(fat)}G GORDURA</Text>
+        <Text className="font-body-bold text-[10px] text-ft-protein">{proteinLabel}G PROTEÍNA</Text>
+        <Text className="font-body-bold text-[10px] text-ft-carbs">{carbsLabel}G CARBOIDRATO</Text>
+        <Text className="font-body-bold text-[10px] text-ft-fat">{fatLabel}G GORDURA</Text>
       </View>
     </View>
   );
 }
 
 function MealItemRow({ item, foodName }: { item: MealItem; foodName: string }) {
+  const unitLabel = getMeasurementUnitLabel(item.unit);
+  const macroSummaryLabel = `${item.quantity} ${unitLabel} · ${Math.round(item.protein)}P / ${Math.round(item.carbs)}C / ${Math.round(item.fat)}G`;
+
   return (
     <View className="flex-row items-center justify-between rounded-2xl bg-ft-card px-4 py-3">
       <View className="flex-1 gap-0.5">
         <Text className="font-body-semibold text-sm text-ft-calories">{foodName}</Text>
-        <Text className="font-body text-xs text-ft-muted-2">
-          {item.quantity} {item.unit === 'Gram' ? 'g' : item.unit.toLowerCase()} · {Math.round(item.protein)}P /{' '}
-          {Math.round(item.carbs)}C / {Math.round(item.fat)}G
-        </Text>
+        <Text className="font-body text-xs text-ft-muted-2">{macroSummaryLabel}</Text>
       </View>
       <Text className="font-body-bold text-sm text-ft-calories">{item.calories}</Text>
     </View>

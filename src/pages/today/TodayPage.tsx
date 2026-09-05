@@ -13,12 +13,15 @@ import {
   getTodayNutrition,
 } from '@/pages/today/model/dashboard-view';
 import { daysBefore, formatDateOnly } from '@/shared/lib/date';
+import { formatSignedNumber } from '@/shared/lib/format';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { LoadingBar } from '@/shared/ui/LoadingBar';
 import { SegmentedProgressBar } from '@/shared/ui/SegmentedProgressBar';
 
 const DaysInWeek = 7;
 const WaterBarSegmentCount = 16;
+const WeightDeltaDecimalPlaces = 1;
+const WeightDecimalPlaces = 1;
 
 const DateLabelFormatter = new Intl.DateTimeFormat('pt-BR', { weekday: 'long', month: 'short', day: 'numeric' });
 const WeekdayFormatter = new Intl.DateTimeFormat('pt-BR', { weekday: 'narrow' });
@@ -53,9 +56,19 @@ export function TodayPage() {
   const { calories, protein, carbs, fat, waterMilliliters } = getTodayNutrition(dashboard.nutritionHistory, todayDate);
 
   const caloriesRemaining = dashboard.dailyCalorieTarget - calories;
+  const caloriesRemainingLabel =
+    caloriesRemaining >= 0 ? `${caloriesRemaining} restantes` : `${Math.abs(caloriesRemaining)} acima`;
+  const caloriesLabel = calories.toLocaleString('pt-BR');
+  const calorieTargetLabel = dashboard.dailyCalorieTarget.toLocaleString('pt-BR');
+
   const loggedMealTypes = todaysMeals.map((meal) => meal.mealType);
   const pendingMealType = findNextPendingMealType(loggedMealTypes);
+  const pendingMealTypeLabel = pendingMealType === null ? 'Tudo registrado' : `${getMealTypeLabel(pendingMealType)} pendente`;
+
+  const currentWeightLabel = dashboard.currentWeightKilograms?.toFixed(WeightDecimalPlaces) ?? '—';
+  const targetWeightLabel = dashboard.targetWeightKilograms?.toFixed(WeightDecimalPlaces) ?? '—';
   const weightDelta = calculateWeightDelta(dashboard.weightHistory, dashboard.currentWeightKilograms);
+  const weightDeltaLabel = weightDelta === null ? null : formatSignedNumber(weightDelta, WeightDeltaDecimalPlaces);
 
   return (
     <SafeAreaView className="flex-1 bg-ft-bg">
@@ -77,13 +90,11 @@ export function TodayPage() {
         <View className="gap-4 rounded-[22px] bg-ft-calories p-5">
           <View className="flex-row items-baseline justify-between">
             <Text className="font-body-bold text-xs uppercase tracking-widest text-blue-200">Calorias</Text>
-            <Text className="font-body-semibold text-xs text-blue-200">
-              {caloriesRemaining >= 0 ? `${caloriesRemaining} restantes` : `${Math.abs(caloriesRemaining)} acima`}
-            </Text>
+            <Text className="font-body-semibold text-xs text-blue-200">{caloriesRemainingLabel}</Text>
           </View>
           <View className="flex-row items-baseline gap-2">
-            <Text className="font-display text-6xl text-white">{calories.toLocaleString('pt-BR')}</Text>
-            <Text className="font-display text-2xl text-blue-300">/ {dashboard.dailyCalorieTarget.toLocaleString('pt-BR')}</Text>
+            <Text className="font-display text-6xl text-white">{caloriesLabel}</Text>
+            <Text className="font-display text-2xl text-blue-300">/ {calorieTargetLabel}</Text>
           </View>
           <View className="h-2.5 flex-row overflow-hidden rounded-sm bg-ft-calories-dark">
             <View
@@ -120,20 +131,13 @@ export function TodayPage() {
             className="flex-[1.15] gap-2 rounded-[18px] bg-ft-card px-4 py-3.5">
             <Text className="font-body-bold text-[10px] uppercase tracking-widest text-ft-muted-2">Peso</Text>
             <View className="flex-row items-baseline gap-1.5">
-              <Text className="font-display text-3xl text-ft-weight">
-                {dashboard.currentWeightKilograms?.toFixed(1) ?? '—'}
-              </Text>
+              <Text className="font-display text-3xl text-ft-weight">{currentWeightLabel}</Text>
               <Text className="font-body-semibold text-xs text-ft-muted-2">kg</Text>
-              {weightDelta !== null && (
-                <Text className="rounded bg-ft-weight px-1.5 py-0.5 font-body-bold text-[11px] text-white">
-                  {weightDelta >= 0 ? '+' : ''}
-                  {weightDelta.toFixed(1)}
-                </Text>
+              {weightDeltaLabel !== null && (
+                <Text className="rounded bg-ft-weight px-1.5 py-0.5 font-body-bold text-[11px] text-white">{weightDeltaLabel}</Text>
               )}
             </View>
-            <Text className="font-body-semibold text-[10px] text-ft-muted-3">
-              Meta {dashboard.targetWeightKilograms?.toFixed(1) ?? '—'} kg
-            </Text>
+            <Text className="font-body-semibold text-[10px] text-ft-muted-3">Meta {targetWeightLabel} kg</Text>
           </Pressable>
 
           <View className="flex-1 gap-2 rounded-[18px] bg-ft-card px-4 py-3.5">
@@ -142,9 +146,7 @@ export function TodayPage() {
               {countDistinctMealTypes(loggedMealTypes)}
               <Text className="font-body text-base text-ft-muted-3"> / 4</Text>
             </Text>
-            <Text className="font-body-semibold text-[10px] text-ft-muted-3">
-              {pendingMealType !== null ? `${getMealTypeLabel(pendingMealType)} pendente` : 'Tudo registrado'}
-            </Text>
+            <Text className="font-body-semibold text-[10px] text-ft-muted-3">{pendingMealTypeLabel}</Text>
           </View>
         </View>
 
@@ -194,6 +196,8 @@ function MacroCard({
   colorClassName: string;
   barColorClassName: string;
 }) {
+  const targetLabel = target === null ? 'sem meta' : `de ${target}g`;
+
   return (
     <View className="flex-1 gap-2.5 rounded-[18px] bg-ft-card p-3.5">
       <Text className={`font-body-bold text-[10px] uppercase tracking-widest ${colorClassName}`}>{label}</Text>
@@ -204,10 +208,12 @@ function MacroCard({
       <View className="h-[7px] overflow-hidden rounded-sm bg-black/10">
         <View className={barColorClassName} style={{ width: `${calculateProgressPercent(value, target)}%` }} />
       </View>
-      <Text className="font-body-semibold text-[10px] text-ft-muted-3">{target !== null ? `de ${target}g` : 'sem meta'}</Text>
+      <Text className="font-body-semibold text-[10px] text-ft-muted-3">{targetLabel}</Text>
     </View>
   );
 }
+
+const MinimumCalorieBarHeightPercent = 4;
 
 function WeeklyCaloriesChart({ nutritionHistory }: { nutritionHistory: { date: string; calories: number }[] }) {
   const maxCalories = Math.max(1, ...nutritionHistory.map((entry) => entry.calories));
@@ -215,13 +221,10 @@ function WeeklyCaloriesChart({ nutritionHistory }: { nutritionHistory: { date: s
   return (
     <View className="gap-2">
       <View className="h-[60px] flex-row items-end gap-1.5">
-        {nutritionHistory.map((entry) => (
-          <View
-            key={entry.date}
-            className="flex-1 rounded-sm bg-ft-calories"
-            style={{ height: `${Math.max(4, (entry.calories / maxCalories) * 100)}%` }}
-          />
-        ))}
+        {nutritionHistory.map((entry) => {
+          const barHeightPercent = Math.max(MinimumCalorieBarHeightPercent, (entry.calories / maxCalories) * 100);
+          return <View key={entry.date} className="flex-1 rounded-sm bg-ft-calories" style={{ height: `${barHeightPercent}%` }} />;
+        })}
       </View>
       <View className="flex-row gap-1.5">
         {nutritionHistory.map((entry) => (
