@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import type { User } from 'firebase/auth';
 import { useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
@@ -10,6 +11,7 @@ import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { LoadingBar } from '@/shared/ui/LoadingBar';
 
 export function YouPage({ user }: { user: User }) {
+  const router = useRouter();
   const profileQuery = useProfileQuery();
   const [isSigningOut, setIsSigningOut] = useState(false);
 
@@ -46,7 +48,12 @@ export function YouPage({ user }: { user: User }) {
   return (
     <SafeAreaView className="flex-1 bg-ft-bg">
       <ScrollView className="flex-1" contentContainerClassName="gap-4 px-6 pt-5 pb-8" showsVerticalScrollIndicator={false}>
-        <Text className="font-display text-5xl uppercase text-ft-calories">Você</Text>
+        <View className="flex-row items-center justify-between">
+          <Text className="font-display text-5xl uppercase text-ft-calories">Você</Text>
+          <Pressable onPress={() => router.push('/edit-profile')} hitSlop={12}>
+            <Text className="font-body-bold text-xs uppercase tracking-widest text-ft-calories">Editar</Text>
+          </Pressable>
+        </View>
 
         <View className="gap-1 rounded-[20px] bg-ft-card px-4 py-4">
           <Text numberOfLines={1} className="font-display text-2xl text-ft-calories">
