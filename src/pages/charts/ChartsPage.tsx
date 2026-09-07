@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Animated, { FadeIn, FadeInDown, FadeOut, FadeOutUp, LinearTransition } from 'react-native-reanimated';
 import Svg, { Path } from 'react-native-svg';
 
 import { useDashboardQuery } from '@/entities/dashboard';
+import { DateRangeCalendarPanel } from '@/pages/charts/DateRangeCalendarPanel';
 import {
   buildMetricSeries,
   formatMetricValue,
@@ -12,29 +14,42 @@ import {
   type MetricDefinition,
   type MetricId,
 } from '@/pages/charts/model/chart-series';
+import {
+  DateRangePresetDefinitions,
+  formatDateRangeLabel,
+  resolveActiveDateRange,
+  type DateRange,
+  type DateRangePresetId,
+} from '@/pages/charts/model/date-range';
 import { buildLineChartPath } from '@/pages/charts/model/line-chart-geometry';
 import { useThemeColors } from '@/shared/config/theme';
-import { daysBefore, formatDateOnly } from '@/shared/lib/date';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { LoadingBar } from '@/shared/ui/LoadingBar';
 
-const ChartsRangeDays = 30;
 const ChartWidth = 320;
 const ChartHeight = 120;
 const ChartPadding = 12;
 const ChartStrokeWidth = 2.5;
 const DefaultSelectedMetricIds: MetricId[] = ['calories'];
+const DefaultPresetId: DateRangePresetId = 'last30';
+const CardEnteringDuration = 260;
+const CardExitingDuration = 180;
 
 const ChartDateFormatter = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short' });
 
+const DayCountPresetDefinitions = DateRangePresetDefinitions.filter((definition) => definition.dayCount !== null);
+
 export function ChartsPage() {
   const today = new Date();
-  const todayDate = formatDateOnly(today);
-  const rangeStartDate = formatDateOnly(daysBefore(today, ChartsRangeDays - 1));
 
-  const dashboardQuery = useDashboardQuery(rangeStartDate, todayDate);
+  const [selectedPresetId, setSelectedPresetId] = useState<DateRangePresetId>(DefaultPresetId);
+  const [customRange, setCustomRange] = useState<DateRange | null>(null);
+  const [isCalendarPanelOpen, setIsCalendarPanelOpen] = useState(false);
   const [selectedMetricIds, setSelectedMetricIds] = useState<MetricId[]>(DefaultSelectedMetricIds);
   const themeColors = useThemeColors();
+
+  const activeDateRange = resolveActiveDateRange(selectedPresetId, customRange, today);
+  const dashboardQuery = useDashboardQuery(activeDateRange.from, activeDateRange.to);
 
   if (dashboardQuery.isPending) {
     return (
@@ -55,6 +70,30 @@ export function ChartsPage() {
   const seriesByMetricId = buildMetricSeries(dashboardQuery.data);
   const selectedDefinitions = MetricDefinitions.filter((definition) => selectedMetricIds.includes(definition.id));
 
+  let calendarChipLabel: string | null = null;
+  if (selectedPresetId === 'custom' && customRange !== null) {
+    calendarChipLabel = formatDateRangeLabel(customRange);
+  }
+
+  function selectPreset(presetId: DateRangePresetId) {
+    setSelectedPresetId(presetId);
+    setIsCalendarPanelOpen(false);
+  }
+
+  function openCalendarPanel() {
+    setIsCalendarPanelOpen(true);
+  }
+
+  function handleConfirmCustomRange(range: DateRange) {
+    setCustomRange(range);
+    setSelectedPresetId('custom');
+    setIsCalendarPanelOpen(false);
+  }
+
+  function handleCancelCustomRange() {
+    setIsCalendarPanelOpen(false);
+  }
+
   function toggleMetric(metricId: MetricId) {
     setSelectedMetricIds((currentIds) =>
       currentIds.includes(metricId) ? currentIds.filter((id) => id !== metricId) : [...currentIds, metricId],
@@ -66,20 +105,55 @@ export function ChartsPage() {
       <ScrollView className="flex-1" contentContainerClassName="gap-4 px-6 pt-5 pb-8" showsVerticalScrollIndicator={false}>
         <Text className="font-display text-5xl uppercase text-ft-calories">Gráficos</Text>
 
-        <View className="flex-row flex-wrap gap-2">
-          {MetricDefinitions.map((definition) => (
-            <MetricToggleChip
-              key={definition.id}
-              label={definition.label}
-              color={themeColors[definition.colorKey]}
-              isSelected={selectedMetricIds.includes(definition.id)}
-              onPress={() => toggleMetric(definition.id)}
-            />
-          ))}
+        <View className="gap-2">
+          <Text className="font-body-bold text-[10px] uppercase tracking-widest text-ft-muted-2">Período</Text>
+          <View className="flex-row flex-wrap gap-2">
+            {DayCountPresetDefinitions.map((definition) => (
+              <SelectionChip
+                key={definition.id}
+                label={definition.label}
+                color={themeColors.calories}
+                isSelected={selectedPresetId === definition.id}
+                onPress={() => selectPreset(definition.id)}
+              />
+            ))}
+            <Animated.View layout={LinearTransition.duration(200)}>
+              <SelectionChip
+                label={calendarChipLabel ?? 'Personalizado'}
+                color={themeColors.calories}
+                isSelected={selectedPresetId === 'custom'}
+                onPress={openCalendarPanel}
+              />
+            </Animated.View>
+          </View>
+        </View>
+
+        {isCalendarPanelOpen && (
+          <DateRangeCalendarPanel initialRange={customRange} onConfirm={handleConfirmCustomRange} onCancel={handleCancelCustomRange} />
+        )}
+
+        <View className="gap-2">
+          <Text className="font-body-bold text-[10px] uppercase tracking-widest text-ft-muted-2">Dados</Text>
+          <View className="flex-row flex-wrap gap-2">
+            {MetricDefinitions.map((definition) => (
+              <SelectionChip
+                key={definition.id}
+                label={definition.label}
+                color={themeColors[definition.colorKey]}
+                isSelected={selectedMetricIds.includes(definition.id)}
+                onPress={() => toggleMetric(definition.id)}
+              />
+            ))}
+          </View>
         </View>
 
         {selectedDefinitions.length === 0 && (
-          <Text className="font-body-semibold text-sm text-ft-muted-2">Selecione ao menos um dado para ver o gráfico.</Text>
+          <Animated.Text
+            entering={FadeIn.duration(180)}
+            exiting={FadeOut.duration(140)}
+            className="font-body-semibold text-sm text-ft-muted-2">
+            Selecione ao menos um dado para ver o gráfico.
+          </Animated.Text>
         )}
 
         {selectedDefinitions.map((definition) => (
@@ -95,17 +169,7 @@ export function ChartsPage() {
   );
 }
 
-function MetricToggleChip({
-  label,
-  color,
-  isSelected,
-  onPress,
-}: {
-  label: string;
-  color: string;
-  isSelected: boolean;
-  onPress: () => void;
-}) {
+function SelectionChip({ label, color, isSelected, onPress }: { label: string; color: string; isSelected: boolean; onPress: () => void }) {
   const backgroundColor = isSelected ? color : 'transparent';
   const textColorClassName = isSelected ? 'text-white' : 'text-ft-muted-2';
 
@@ -130,7 +194,11 @@ function MetricChartCard({ definition, points, color }: { definition: MetricDefi
   const emptyStateLabel = points.length === 0 ? 'Sem dados no período.' : 'Registre mais dias para ver a tendência.';
 
   return (
-    <View className="gap-2.5 rounded-[20px] bg-ft-card px-4 py-3.5">
+    <Animated.View
+      entering={FadeInDown.duration(CardEnteringDuration)}
+      exiting={FadeOutUp.duration(CardExitingDuration)}
+      layout={LinearTransition.duration(220)}
+      className="gap-2.5 rounded-[20px] bg-ft-card px-4 py-3.5">
       <View className="flex-row items-baseline justify-between">
         <Text className="font-body-bold text-[10px] uppercase tracking-widest text-ft-muted-2">{definition.label}</Text>
         <View className="flex-row items-baseline gap-1">
@@ -154,6 +222,6 @@ function MetricChartCard({ definition, points, color }: { definition: MetricDefi
           </View>
         </>
       )}
-    </View>
+    </Animated.View>
   );
 }
