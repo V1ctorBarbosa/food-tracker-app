@@ -201,7 +201,9 @@ function MacroCard({
 
   return (
     <View className="flex-1 gap-2.5 rounded-[18px] bg-ft-card p-3.5">
-      <Text className={`font-body-bold text-[10px] uppercase tracking-widest ${colorClassName}`}>{label}</Text>
+      <Text numberOfLines={1} className={`font-body-bold text-[10px] uppercase tracking-wide ${colorClassName}`}>
+        {label}
+      </Text>
       <Text numberOfLines={1} className={`font-display text-2xl ${colorClassName}`}>
         {valueLabel}
         <Text className="text-xs">g</Text>
