@@ -197,21 +197,31 @@ function MacroCard({
   colorClassName: string;
   barColorClassName: string;
 }) {
-  const targetLabel = target === null ? 'sem meta' : `de ${target}g`;
   const valueLabel = formatMacroGrams(value);
 
   return (
     <View className="flex-1 gap-2.5 rounded-[18px] bg-ft-card p-3.5">
       <Text className={`font-body-bold text-[10px] uppercase tracking-widest ${colorClassName}`}>{label}</Text>
-      <Text className={`font-display text-[28px] ${colorClassName}`}>
+      <Text numberOfLines={1} className={`font-display text-2xl ${colorClassName}`}>
         {valueLabel}
-        <Text className="text-sm">g</Text>
+        <Text className="text-xs">g</Text>
       </Text>
+      {target !== null && <MacroTargetProgress value={value} target={target} barColorClassName={barColorClassName} />}
+    </View>
+  );
+}
+
+function MacroTargetProgress({ value, target, barColorClassName }: { value: number; target: number; barColorClassName: string }) {
+  const targetLabel = `de ${target}g`;
+  const progressPercent = calculateProgressPercent(value, target);
+
+  return (
+    <>
       <View className="h-[7px] overflow-hidden rounded-sm bg-black/10">
-        <View className={barColorClassName} style={{ width: `${calculateProgressPercent(value, target)}%` }} />
+        <View className={barColorClassName} style={{ width: `${progressPercent}%` }} />
       </View>
       <Text className="font-body-semibold text-[10px] text-ft-muted-3">{targetLabel}</Text>
-    </View>
+    </>
   );
 }
 
