@@ -1,5 +1,6 @@
 import type { NutritionHistoryEntry, WeightHistoryEntry } from '@/entities/dashboard';
 import type { MealType } from '@/entities/meal';
+import { formatMaxDecimals } from '@/shared/lib/format';
 
 const AllMealTypesInOrder: MealType[] = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
 
@@ -40,7 +41,7 @@ const MacroGramsMaximumDecimalPlaces = 1;
 
 /** Rounds a macro amount to at most one decimal place, trimming a trailing ".0". */
 export function formatMacroGrams(valueGrams: number): string {
-  return valueGrams.toLocaleString('pt-BR', { maximumFractionDigits: MacroGramsMaximumDecimalPlaces });
+  return formatMaxDecimals(valueGrams, MacroGramsMaximumDecimalPlaces);
 }
 
 export function findNextPendingMealType(loggedMealTypes: MealType[]): MealType | null {

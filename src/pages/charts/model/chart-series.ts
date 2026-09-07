@@ -1,5 +1,6 @@
 import type { Dashboard } from '@/entities/dashboard';
 import type { ThemeColors } from '@/shared/config/theme';
+import { formatMaxDecimals } from '@/shared/lib/format';
 
 export type MetricId = 'calories' | 'protein' | 'carbs' | 'fat' | 'water' | 'weight';
 
@@ -44,5 +45,5 @@ export function buildMetricSeries(dashboard: Pick<Dashboard, 'nutritionHistory' 
 }
 
 export function formatMetricValue(definition: MetricDefinition, value: number): string {
-  return value.toLocaleString('pt-BR', { maximumFractionDigits: definition.decimalPlaces });
+  return formatMaxDecimals(value, definition.decimalPlaces);
 }

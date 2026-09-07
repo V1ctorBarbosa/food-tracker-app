@@ -1,4 +1,4 @@
-import { formatSignedNumber } from './format';
+import { formatMaxDecimals, formatSignedNumber } from './format';
 
 describe('formatSignedNumber', () => {
   test('prefixes a positive value with +', () => {
@@ -15,5 +15,15 @@ describe('formatSignedNumber', () => {
 
   test('rounds to the given number of decimal places', () => {
     expect(formatSignedNumber(1.567, 2)).toBe('+1.57');
+  });
+});
+
+describe('formatMaxDecimals', () => {
+  test('rounds a floating-point value to the given number of decimals', () => {
+    expect(formatMaxDecimals(14.819999999999999, 1)).toBe('14,8');
+  });
+
+  test('trims a trailing zero decimal for a whole number', () => {
+    expect(formatMaxDecimals(2000, 0)).toBe('2.000');
   });
 });
