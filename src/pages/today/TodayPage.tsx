@@ -10,6 +10,7 @@ import {
   countDistinctMealTypes,
   findNextPendingMealType,
   formatLiters,
+  formatMacroGrams,
   getTodayNutrition,
 } from '@/pages/today/model/dashboard-view';
 import { daysBefore, formatDateOnly } from '@/shared/lib/date';
@@ -197,12 +198,13 @@ function MacroCard({
   barColorClassName: string;
 }) {
   const targetLabel = target === null ? 'sem meta' : `de ${target}g`;
+  const valueLabel = formatMacroGrams(value);
 
   return (
     <View className="flex-1 gap-2.5 rounded-[18px] bg-ft-card p-3.5">
       <Text className={`font-body-bold text-[10px] uppercase tracking-widest ${colorClassName}`}>{label}</Text>
       <Text className={`font-display text-[28px] ${colorClassName}`}>
-        {value}
+        {valueLabel}
         <Text className="text-sm">g</Text>
       </Text>
       <View className="h-[7px] overflow-hidden rounded-sm bg-black/10">

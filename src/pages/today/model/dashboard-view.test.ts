@@ -6,6 +6,7 @@ import {
   countDistinctMealTypes,
   findNextPendingMealType,
   formatLiters,
+  formatMacroGrams,
   getTodayNutrition,
 } from './dashboard-view';
 
@@ -85,6 +86,20 @@ describe('getTodayNutrition', () => {
       fat: 0,
       waterMilliliters: 0,
     });
+  });
+});
+
+describe('formatMacroGrams', () => {
+  test('rounds a floating-point value to one decimal place', () => {
+    expect(formatMacroGrams(14.819999999999999)).toBe('14,8');
+  });
+
+  test('trims a trailing zero decimal for a whole number', () => {
+    expect(formatMacroGrams(71)).toBe('71');
+  });
+
+  test('rounds to the nearest tenth', () => {
+    expect(formatMacroGrams(6.849999999999999)).toBe('6,8');
   });
 });
 

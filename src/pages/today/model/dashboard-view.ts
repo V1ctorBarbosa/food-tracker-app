@@ -36,6 +36,13 @@ export function calculateWeightDelta(weightHistory: WeightHistoryEntry[], curren
   return currentWeightKilograms - previousWeight;
 }
 
+const MacroGramsMaximumDecimalPlaces = 1;
+
+/** Rounds a macro amount to at most one decimal place, trimming a trailing ".0". */
+export function formatMacroGrams(valueGrams: number): string {
+  return valueGrams.toLocaleString('pt-BR', { maximumFractionDigits: MacroGramsMaximumDecimalPlaces });
+}
+
 export function findNextPendingMealType(loggedMealTypes: MealType[]): MealType | null {
   return AllMealTypesInOrder.find((mealType) => !loggedMealTypes.includes(mealType)) ?? null;
 }
