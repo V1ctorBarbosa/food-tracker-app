@@ -107,7 +107,7 @@ export function TodayPage() {
 
         <View className="flex-row gap-2.5">
           <MacroCard label="Proteína" value={protein} target={dashboard.dailyProteinTargetGrams} colorClassName="text-ft-protein" barColorClassName="bg-ft-protein" />
-          <MacroCard label="Carboidrato" value={carbs} target={dashboard.dailyCarbsTargetGrams} colorClassName="text-ft-carbs" barColorClassName="bg-ft-carbs" />
+          <MacroCard label="Carb" value={carbs} target={dashboard.dailyCarbsTargetGrams} colorClassName="text-ft-carbs" barColorClassName="bg-ft-carbs" />
           <MacroCard label="Gordura" value={fat} target={dashboard.dailyFatTargetGrams} colorClassName="text-ft-fat" barColorClassName="bg-ft-fat" />
         </View>
 
