@@ -14,17 +14,19 @@ export type MetricDefinition = {
   unit: string;
   colorKey: keyof ThemeColors;
   decimalPlaces: number;
+  /** Spacing between y-axis gridlines, in the metric's own unit. */
+  yAxisStep: number;
 };
 
 const MillilitersPerLiter = 1000;
 
 export const MetricDefinitions: MetricDefinition[] = [
-  { id: 'calories', label: 'Calorias', unit: 'kcal', colorKey: 'calories', decimalPlaces: 0 },
-  { id: 'protein', label: 'Proteína', unit: 'g', colorKey: 'protein', decimalPlaces: 1 },
-  { id: 'carbs', label: 'Carboidrato', unit: 'g', colorKey: 'carbs', decimalPlaces: 1 },
-  { id: 'fat', label: 'Gordura', unit: 'g', colorKey: 'fat', decimalPlaces: 1 },
-  { id: 'water', label: 'Água', unit: 'L', colorKey: 'water', decimalPlaces: 1 },
-  { id: 'weight', label: 'Peso', unit: 'kg', colorKey: 'weight', decimalPlaces: 1 },
+  { id: 'calories', label: 'Calorias', unit: 'kcal', colorKey: 'calories', decimalPlaces: 0, yAxisStep: 500 },
+  { id: 'protein', label: 'Proteína', unit: 'g', colorKey: 'protein', decimalPlaces: 1, yAxisStep: 40 },
+  { id: 'carbs', label: 'Carboidrato', unit: 'g', colorKey: 'carbs', decimalPlaces: 1, yAxisStep: 40 },
+  { id: 'fat', label: 'Gordura', unit: 'g', colorKey: 'fat', decimalPlaces: 1, yAxisStep: 40 },
+  { id: 'water', label: 'Água', unit: 'L', colorKey: 'water', decimalPlaces: 1, yAxisStep: 1 },
+  { id: 'weight', label: 'Peso', unit: 'kg', colorKey: 'weight', decimalPlaces: 1, yAxisStep: 10 },
 ];
 
 /** Builds each metric's chart series from the dashboard's daily nutrition rows and sparse weight entries. */

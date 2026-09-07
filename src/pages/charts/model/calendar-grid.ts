@@ -93,6 +93,19 @@ export function shiftMonth(year: number, monthIndex: number, monthDelta: number)
   return { year: shiftedDate.getFullYear(), monthIndex: shiftedDate.getMonth() };
 }
 
+export function isDateSelectable(date: string, maxSelectableDate: string): boolean {
+  return date <= maxSelectableDate;
+}
+
+/** Whether the given month is the one `referenceDate` falls in, or a later one -- there is nothing selectable beyond it. */
+export function isCurrentOrFutureMonth(year: number, monthIndex: number, referenceDate: Date): boolean {
+  if (year !== referenceDate.getFullYear()) {
+    return year > referenceDate.getFullYear();
+  }
+
+  return monthIndex >= referenceDate.getMonth();
+}
+
 const MonthLabelFormatter = new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' });
 
 export function formatMonthLabel(year: number, monthIndex: number): string {

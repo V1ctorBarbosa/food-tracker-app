@@ -1,4 +1,13 @@
-import { applyCalendarSelection, buildMonthGrid, formatMonthLabel, getCalendarCellState, groupIntoWeeks, shiftMonth } from './calendar-grid';
+import {
+  applyCalendarSelection,
+  buildMonthGrid,
+  formatMonthLabel,
+  getCalendarCellState,
+  groupIntoWeeks,
+  isCurrentOrFutureMonth,
+  isDateSelectable,
+  shiftMonth,
+} from './calendar-grid';
 
 describe('buildMonthGrid', () => {
   test('pads leading blanks so the 1st lands on its real weekday, and pads trailing blanks to a full week', () => {
@@ -88,5 +97,34 @@ describe('shiftMonth', () => {
 describe('formatMonthLabel', () => {
   test('formats the full month name and year', () => {
     expect(formatMonthLabel(2026, 8)).toBe('setembro de 2026');
+  });
+});
+
+describe('isDateSelectable', () => {
+  test('allows a date on or before the maximum', () => {
+    expect(isDateSelectable('2026-09-07', '2026-09-07')).toBe(true);
+    expect(isDateSelectable('2026-09-06', '2026-09-07')).toBe(true);
+  });
+
+  test('rejects a date after the maximum', () => {
+    expect(isDateSelectable('2026-09-08', '2026-09-07')).toBe(false);
+  });
+});
+
+describe('isCurrentOrFutureMonth', () => {
+  const referenceDate = new Date(2026, 8, 7);
+
+  test('is true for the month the reference date falls in', () => {
+    expect(isCurrentOrFutureMonth(2026, 8, referenceDate)).toBe(true);
+  });
+
+  test('is true for a later month in the same year, and for a later year entirely', () => {
+    expect(isCurrentOrFutureMonth(2026, 9, referenceDate)).toBe(true);
+    expect(isCurrentOrFutureMonth(2027, 0, referenceDate)).toBe(true);
+  });
+
+  test('is false for an earlier month', () => {
+    expect(isCurrentOrFutureMonth(2026, 7, referenceDate)).toBe(false);
+    expect(isCurrentOrFutureMonth(2025, 11, referenceDate)).toBe(false);
   });
 });

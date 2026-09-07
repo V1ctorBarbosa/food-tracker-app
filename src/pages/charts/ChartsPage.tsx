@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, FadeInDown, FadeOut, FadeOutUp, LinearTransition } from 'react-native-reanimated';
-import Svg, { Path } from 'react-native-svg';
+import Svg, { Line, Path, Text as SvgText } from 'react-native-svg';
 
 import { useDashboardQuery } from '@/entities/dashboard';
 import { DateRangeCalendarPanel } from '@/pages/charts/DateRangeCalendarPanel';
@@ -21,15 +21,21 @@ import {
   type DateRange,
   type DateRangePresetId,
 } from '@/pages/charts/model/date-range';
-import { buildLineChartPath } from '@/pages/charts/model/line-chart-geometry';
+import { buildAxisTicks, buildLineChartPath, mapValueToY, type PlotArea } from '@/pages/charts/model/line-chart-geometry';
 import { useThemeColors } from '@/shared/config/theme';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { LoadingBar } from '@/shared/ui/LoadingBar';
 
 const ChartWidth = 320;
 const ChartHeight = 120;
-const ChartPadding = 12;
+const ChartLeftAxisWidth = 32;
+const ChartRightPadding = 6;
+const ChartVerticalPadding = 10;
 const ChartStrokeWidth = 2.5;
+const GridlineColor = 'rgba(0, 0, 0, 0.08)';
+const AxisLabelFontSize = 8;
+const AxisLabelGap = 4;
+const AxisLabelBaselineOffset = 3;
 const DefaultSelectedMetricIds: MetricId[] = ['calories'];
 const DefaultPresetId: DateRangePresetId = 'last30';
 const CardEnteringDuration = 260;
@@ -129,7 +135,12 @@ export function ChartsPage() {
         </View>
 
         {isCalendarPanelOpen && (
-          <DateRangeCalendarPanel initialRange={customRange} onConfirm={handleConfirmCustomRange} onCancel={handleCancelCustomRange} />
+          <DateRangeCalendarPanel
+            initialRange={customRange}
+            today={today}
+            onConfirm={handleConfirmCustomRange}
+            onCancel={handleCancelCustomRange}
+          />
         )}
 
         <View className="gap-2">
@@ -162,6 +173,7 @@ export function ChartsPage() {
             definition={definition}
             points={seriesByMetricId[definition.id]}
             color={themeColors[definition.colorKey]}
+            mutedColor={themeColors.textMuted3}
           />
         ))}
       </ScrollView>
@@ -180,15 +192,30 @@ function SelectionChip({ label, color, isSelected, onPress }: { label: string; c
   );
 }
 
-function MetricChartCard({ definition, points, color }: { definition: MetricDefinition; points: ChartPoint[]; color: string }) {
+function MetricChartCard({
+  definition,
+  points,
+  color,
+  mutedColor,
+}: {
+  definition: MetricDefinition;
+  points: ChartPoint[];
+  color: string;
+  mutedColor: string;
+}) {
   const latestPoint = points.length > 0 ? points[points.length - 1] : null;
   const latestValueLabel = latestPoint === null ? '—' : formatMetricValue(definition, latestPoint.value);
-  const pathData = buildLineChartPath(
-    points.map((point) => point.value),
-    ChartWidth,
-    ChartHeight,
-    ChartPadding,
-  );
+
+  const values = points.map((point) => point.value);
+  const axisTicks = buildAxisTicks(values, definition.yAxisStep);
+  const plotArea: PlotArea = {
+    x: ChartLeftAxisWidth,
+    y: ChartVerticalPadding,
+    width: ChartWidth - ChartLeftAxisWidth - ChartRightPadding,
+    height: ChartHeight - 2 * ChartVerticalPadding,
+  };
+  const pathData = buildLineChartPath(values, axisTicks.domainMin, axisTicks.domainMax, plotArea);
+
   const firstDateLabel = points.length > 0 ? ChartDateFormatter.format(new Date(`${points[0].date}T00:00:00`)) : null;
   const lastDateLabel = points.length > 0 ? ChartDateFormatter.format(new Date(`${points[points.length - 1].date}T00:00:00`)) : null;
   const emptyStateLabel = points.length === 0 ? 'Sem dados no período.' : 'Registre mais dias para ver a tendência.';
@@ -214,14 +241,52 @@ function MetricChartCard({ definition, points, color }: { definition: MetricDefi
       ) : (
         <>
           <Svg width="100%" height={ChartHeight} viewBox={`0 0 ${ChartWidth} ${ChartHeight}`} preserveAspectRatio="none">
+            {axisTicks.values.map((tickValue) => (
+              <AxisGridline
+                key={tickValue}
+                tickValue={tickValue}
+                domainMin={axisTicks.domainMin}
+                domainMax={axisTicks.domainMax}
+                plotArea={plotArea}
+                label={formatMetricValue(definition, tickValue)}
+                labelColor={mutedColor}
+              />
+            ))}
             <Path d={pathData} stroke={color} strokeWidth={ChartStrokeWidth} fill="none" />
           </Svg>
-          <View className="flex-row justify-between">
+          <View className="flex-row justify-between" style={{ paddingLeft: ChartLeftAxisWidth }}>
             <Text className="font-body-semibold text-[9px] text-ft-muted-3">{firstDateLabel}</Text>
             <Text className="font-body-semibold text-[9px] text-ft-muted-3">{lastDateLabel}</Text>
           </View>
         </>
       )}
     </Animated.View>
+  );
+}
+
+function AxisGridline({
+  tickValue,
+  domainMin,
+  domainMax,
+  plotArea,
+  label,
+  labelColor,
+}: {
+  tickValue: number;
+  domainMin: number;
+  domainMax: number;
+  plotArea: PlotArea;
+  label: string;
+  labelColor: string;
+}) {
+  const y = mapValueToY(tickValue, domainMin, domainMax, plotArea);
+
+  return (
+    <>
+      <Line x1={plotArea.x} y1={y} x2={plotArea.x + plotArea.width} y2={y} stroke={GridlineColor} strokeWidth={1} />
+      <SvgText x={plotArea.x - AxisLabelGap} y={y + AxisLabelBaselineOffset} fontSize={AxisLabelFontSize} fill={labelColor} textAnchor="end">
+        {label}
+      </SvgText>
+    </>
   );
 }
