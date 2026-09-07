@@ -1,23 +1,21 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Controller, useForm, type Control } from 'react-hook-form';
-import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, Text, TextInput, View } from 'react-native';
+import { useForm } from 'react-hook-form';
+import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, Text, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useUpsertProfileMutation } from '@/entities/profile';
 import {
-  OnboardingDefaultValues,
-  OnboardingFormSchema,
-  OnboardingSteps,
+  ProfileFieldInput,
+  ProfileFormDefaultValues,
+  ProfileFormSchema,
+  ProfileFormSteps,
   getStepValidationMessage,
-  parseDisplayValue,
-  type OnboardingFormOutput,
-  type OnboardingFormValues,
-  type OnboardingStep,
-} from '@/pages/onboarding/model/onboarding-form-schema';
-import { theme } from '@/shared/config/theme';
+  useUpsertProfileMutation,
+  type ProfileFormOutput,
+  type ProfileFormValues,
+} from '@/entities/profile';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 
 const StepEntranceDurationMs = 320;
@@ -33,17 +31,17 @@ export function OnboardingPage() {
     setValue,
     handleSubmit,
     formState: { errors },
-  } = useForm<OnboardingFormValues, unknown, OnboardingFormOutput>({
-    resolver: zodResolver(OnboardingFormSchema),
-    defaultValues: OnboardingDefaultValues,
+  } = useForm<ProfileFormValues, unknown, ProfileFormOutput>({
+    resolver: zodResolver(ProfileFormSchema),
+    defaultValues: ProfileFormDefaultValues,
   });
 
-  const currentStep = OnboardingSteps[currentStepIndex];
-  const isLastStep = currentStepIndex === OnboardingSteps.length - 1;
-  const progressPercent = ((currentStepIndex + 1) / OnboardingSteps.length) * 100;
+  const currentStep = ProfileFormSteps[currentStepIndex];
+  const isLastStep = currentStepIndex === ProfileFormSteps.length - 1;
+  const progressPercent = ((currentStepIndex + 1) / ProfileFormSteps.length) * 100;
   const validationMessage = getStepValidationMessage(currentStep, errors[currentStep.key] !== undefined);
 
-  async function submitProfile(profile: OnboardingFormOutput) {
+  async function submitProfile(profile: ProfileFormOutput) {
     await upsertProfileMutation.mutateAsync(profile);
     router.replace('/today');
   }
@@ -66,7 +64,7 @@ export function OnboardingPage() {
     }
 
     // Casting past the union-of-keys type: every number step's value type accepts `null` while
-    // editing (see OnboardingFormValues), the schema resolves what "skipped" means per field.
+    // editing (see ProfileFormValues), the schema resolves what "skipped" means per field.
     setValue(currentStep.key, null as never, { shouldValidate: false });
     await handlePressNext();
   }
@@ -95,11 +93,11 @@ export function OnboardingPage() {
         <View className="flex-1 justify-center px-7">
           <Animated.View key={currentStepIndex} entering={FadeInDown.duration(StepEntranceDurationMs)} className="gap-2">
             <Text className="font-body-bold text-xs uppercase tracking-widest text-ft-muted">
-              Passo {currentStepIndex + 1} de {OnboardingSteps.length}
+              Passo {currentStepIndex + 1} de {ProfileFormSteps.length}
             </Text>
             <Text className="font-display text-3xl uppercase leading-tight text-ft-calories">{currentStep.question}</Text>
             <View className="mt-6 gap-2">
-              <StepInput step={currentStep} control={control} onSubmitEditing={handlePressNext} />
+              <ProfileFieldInput step={currentStep} control={control} autoFocus onSubmitEditing={handlePressNext} />
               {validationMessage !== null && <Text className="font-body text-xs text-ft-carbs">{validationMessage}</Text>}
             </View>
           </Animated.View>
@@ -127,89 +125,5 @@ export function OnboardingPage() {
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
-  );
-}
-
-function StepInput({
-  step,
-  control,
-  onSubmitEditing,
-}: {
-  step: OnboardingStep;
-  control: Control<OnboardingFormValues>;
-  onSubmitEditing: () => void;
-}) {
-  if (step.kind === 'text') {
-    return (
-      <Controller
-        control={control}
-        name={step.key}
-        render={({ field }) => (
-          <TextInput
-            autoFocus
-            value={field.value}
-            onChangeText={field.onChange}
-            onBlur={field.onBlur}
-            placeholder={step.placeholder}
-            placeholderTextColor={theme.light.textMuted3}
-            onSubmitEditing={onSubmitEditing}
-            returnKeyType="next"
-            className="h-[58px] rounded-2xl border-0 bg-ft-card px-5 font-body-medium text-lg text-ft-calories outline-none"
-          />
-        )}
-      />
-    );
-  }
-
-  if (step.kind === 'select') {
-    return (
-      <Controller
-        control={control}
-        name={step.key}
-        render={({ field }) => (
-          <View className="gap-2.5">
-            {step.options.map((option) => {
-              const isSelected = field.value === option.value;
-              return (
-                <Pressable
-                  key={option.value}
-                  onPress={() => field.onChange(option.value)}
-                  className={`h-[54px] justify-center rounded-2xl px-5 ${isSelected ? 'bg-ft-calories' : 'bg-ft-card'}`}>
-                  <Text className={`font-body-semibold text-base ${isSelected ? 'text-white' : 'text-ft-calories'}`}>
-                    {option.label}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-        )}
-      />
-    );
-  }
-
-  return (
-    <Controller
-      control={control}
-      name={step.key}
-      render={({ field }) => (
-        <View className="gap-2">
-          <View className="h-[58px] flex-row items-center rounded-2xl bg-ft-card px-5">
-            <TextInput
-              autoFocus
-              value={field.value === null ? '' : String(field.value / step.unitScale)}
-              onChangeText={(text) => field.onChange(parseDisplayValue(text, step.unitScale))}
-              onBlur={field.onBlur}
-              placeholderTextColor={theme.light.textMuted3}
-              keyboardType="numeric"
-              onSubmitEditing={onSubmitEditing}
-              returnKeyType="next"
-              className="flex-1 border-0 font-body-medium text-lg text-ft-calories outline-none"
-            />
-            <Text className="font-body-semibold text-sm text-ft-muted-2">{step.unitLabel}</Text>
-          </View>
-          {step.helperText !== null && <Text className="font-body text-xs text-ft-muted-2">{step.helperText}</Text>}
-        </View>
-      )}
-    />
   );
 }
