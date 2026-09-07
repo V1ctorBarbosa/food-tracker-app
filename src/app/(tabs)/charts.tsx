@@ -1,5 +1,5 @@
-import { ComingSoon } from '@/shared/ui/ComingSoon';
+import { ChartsPage } from '@/pages/charts/ChartsPage';
 
 export default function ChartsRoute() {
-  return <ComingSoon title="Gráficos" />;
+  return <ChartsPage />;
 }
