@@ -23,7 +23,12 @@ export function useAuthErrorRecovery(error: unknown): AuthErrorRecovery {
       return;
     }
 
-    const timeoutId = setTimeout(() => void signOutOfSession(), SignOutDelayMs);
+    // A rejected signOutOfSession() (e.g. no network) has no further recovery action available
+    // from inside a timeout callback -- swallowed here only to avoid an unhandled rejection; the
+    // recovery message above is already what tells the user something is wrong.
+    const timeoutId = setTimeout(() => {
+      signOutOfSession().catch(() => {});
+    }, SignOutDelayMs);
     return () => clearTimeout(timeoutId);
   }, [authErrorCode]);
 

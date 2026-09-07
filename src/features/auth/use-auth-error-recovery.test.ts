@@ -5,7 +5,7 @@ import { ApiError } from '@/shared/api/http-client';
 import { useAuthErrorRecovery } from './use-auth-error-recovery';
 
 jest.mock('@/shared/api/firebase', () => ({ auth: {} }));
-jest.mock('./sign-out', () => ({ signOutOfSession: jest.fn() }));
+jest.mock('./sign-out', () => ({ signOutOfSession: jest.fn().mockResolvedValue(undefined) }));
 
 const mockedSignOutOfSession = jest.requireMock('./sign-out').signOutOfSession as jest.Mock;
 const SignOutDelayMs = 3500;
@@ -59,6 +59,17 @@ describe('useAuthErrorRecovery', () => {
     expect(mockedSignOutOfSession).not.toHaveBeenCalled();
 
     jest.advanceTimersByTime(SignOutDelayMs);
+
+    expect(mockedSignOutOfSession).toHaveBeenCalledTimes(1);
+  });
+
+  test('does not leave a rejected signOutOfSession unhandled', async () => {
+    mockedSignOutOfSession.mockRejectedValueOnce(new Error('network failure'));
+
+    await renderHook(() => useAuthErrorRecovery(new ApiError(401, 'Unauthorized.', 'TokenExpired')));
+
+    jest.advanceTimersByTime(SignOutDelayMs);
+    await Promise.resolve();
 
     expect(mockedSignOutOfSession).toHaveBeenCalledTimes(1);
   });

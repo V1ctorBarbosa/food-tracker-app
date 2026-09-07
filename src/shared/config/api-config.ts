@@ -15,6 +15,14 @@ const ApiHttpsPort = 7267;
  * the app at all; native's HTTP call isn't subject to the same browser redirect behavior.
  */
 function resolveApiBaseUrl(): string {
+  // Expo inlines any EXPO_PUBLIC_-prefixed variable at build time (from a local .env file or an
+  // EAS build profile's env). Setting this is how a real deployed backend gets wired in later --
+  // everything below is dev-only resolution for a locally running API.
+  const configuredBaseUrl = process.env.EXPO_PUBLIC_API_BASE_URL;
+  if (configuredBaseUrl !== undefined && configuredBaseUrl.length > 0) {
+    return configuredBaseUrl;
+  }
+
   if (Platform.OS === 'web') {
     return `https://localhost:${ApiHttpsPort}`;
   }
