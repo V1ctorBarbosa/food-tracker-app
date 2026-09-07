@@ -28,9 +28,16 @@ function DeleteAction({ translation, onPress }: { translation: SharedValue<numbe
   // translation-following technique used in react-native-gesture-handler's own Swipeable docs.
   const animatedStyle = useAnimatedStyle(() => ({ transform: [{ translateX: translation.value + RightActionWidthPx }] }));
 
+  function handlePress() {
+    // Pressable never awaits onPress, so a rejected onDelete would otherwise surface as an
+    // unhandled promise rejection. The caller's own mutation state (isPending/isError) already
+    // drives user-facing feedback, so there's nothing left to do with the rejection here.
+    Promise.resolve(onPress()).catch(() => {});
+  }
+
   return (
     <Animated.View style={[{ width: RightActionWidthPx }, animatedStyle]}>
-      <Pressable onPress={onPress} className="ml-2 h-full items-center justify-center rounded-2xl bg-ft-carbs">
+      <Pressable onPress={handlePress} className="ml-2 h-full items-center justify-center rounded-2xl bg-ft-carbs">
         <TrashIcon />
         <Text className="mt-1 font-body-bold text-[10px] uppercase tracking-widest text-white">Excluir</Text>
       </Pressable>

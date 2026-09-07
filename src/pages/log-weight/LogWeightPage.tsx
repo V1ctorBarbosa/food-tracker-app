@@ -154,6 +154,7 @@ export function LogWeightPage() {
         </View>
 
         {createWeightEntryMutation.isError && <ErrorMessage message="Não foi possível registrar o peso. Tente novamente." />}
+        {deleteWeightEntryMutation.isError && <ErrorMessage message="Não foi possível remover o registro. Tente novamente." />}
 
         {sortedHistory.length > 0 && (
           <View className="gap-2.5">

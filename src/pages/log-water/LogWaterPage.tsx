@@ -173,6 +173,7 @@ export function LogWaterPage() {
         )}
 
         {createWaterEntryMutation.isError && <ErrorMessage message="Não foi possível registrar a água. Tente novamente." />}
+        {deleteWaterEntryMutation.isError && <ErrorMessage message="Não foi possível remover o registro. Tente novamente." />}
 
         {todaysEntries.length > 0 && (
           <View className="gap-2.5">
