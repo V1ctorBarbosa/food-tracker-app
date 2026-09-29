@@ -1,4 +1,4 @@
-import { auth } from '@/shared/api/firebase';
+import { authGateway } from '@/shared/api/auth-gateway';
 import { apiBaseUrl } from '@/shared/config/api-config';
 
 export class ApiError extends Error {
@@ -52,8 +52,8 @@ export async function deleteRequest(path: string): Promise<void> {
 }
 
 async function buildAuthHeaders(): Promise<Record<string, string>> {
-  const idToken = await auth.currentUser?.getIdToken();
-  if (idToken === undefined) {
+  const idToken = await authGateway.getIdToken();
+  if (idToken === null) {
     throw new Error('Cannot call the API without a signed-in user.');
   }
 

@@ -1,16 +1,16 @@
 import { useRouter } from 'expo-router';
-import type { User } from 'firebase/auth';
 import { useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useProfileQuery } from '@/entities/profile';
 import { signOutOfSession } from '@/features/auth';
-import { buildBodyStatRows, buildTargetRows, type ProfileStatRow } from '@/pages/you/model/profile-view';
+import { buildBodyStatRows, buildTargetRows, type ProfileStatRow } from '@/pages/user-profile/model/profile-view';
+import type { AuthUser } from '@/shared/api/auth-gateway';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { LoadingBar } from '@/shared/ui/LoadingBar';
 
-export function YouPage({ user }: { user: User }) {
+export function UserProfilePage({ user }: { user: AuthUser }) {
   const router = useRouter();
   const profileQuery = useProfileQuery();
   const [isSigningOut, setIsSigningOut] = useState(false);

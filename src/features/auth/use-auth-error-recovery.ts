@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
 
+import { authGateway } from '@/shared/api/auth-gateway';
 import { ApiError } from '@/shared/api/http-client';
 
 import { AuthErrorCode, getAuthErrorMessage, isAuthErrorCode } from './model/auth-error-messages';
-import { signOutOfSession } from './sign-out';
 
 const UnauthorizedStatus = 401;
 const SignOutDelayMs = 3500;
@@ -27,7 +27,7 @@ export function useAuthErrorRecovery(error: unknown): AuthErrorRecovery {
     // from inside a timeout callback -- swallowed here only to avoid an unhandled rejection; the
     // recovery message above is already what tells the user something is wrong.
     const timeoutId = setTimeout(() => {
-      signOutOfSession().catch(() => {});
+      authGateway.signOut().catch(() => {});
     }, SignOutDelayMs);
     return () => clearTimeout(timeoutId);
   }, [authErrorCode]);

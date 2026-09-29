@@ -6,7 +6,7 @@ import { googleWebClientId } from '@/shared/config/firebase-config';
 
 GoogleSignin.configure({ webClientId: googleWebClientId });
 
-export async function signInWithGoogle(): Promise<void> {
+export async function signInWithGoogleCredential(): Promise<void> {
   await GoogleSignin.hasPlayServices();
   const response = await GoogleSignin.signIn();
 

@@ -4,10 +4,9 @@ import { ApiError } from '@/shared/api/http-client';
 
 import { useAuthErrorRecovery } from './use-auth-error-recovery';
 
-jest.mock('@/shared/api/firebase', () => ({ auth: {} }));
-jest.mock('./sign-out', () => ({ signOutOfSession: jest.fn().mockResolvedValue(undefined) }));
+jest.mock('@/shared/api/auth-gateway', () => ({ authGateway: { signOut: jest.fn().mockResolvedValue(undefined) } }));
 
-const mockedSignOutOfSession = jest.requireMock('./sign-out').signOutOfSession as jest.Mock;
+const mockedSignOutOfSession = jest.requireMock('@/shared/api/auth-gateway').authGateway.signOut as jest.Mock;
 const SignOutDelayMs = 3500;
 
 describe('useAuthErrorRecovery', () => {

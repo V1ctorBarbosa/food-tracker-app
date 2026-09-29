@@ -1,5 +1,5 @@
 import { useSession } from '@/entities/session';
-import { YouPage } from '@/pages/you/YouPage';
+import { UserProfilePage } from '@/pages/user-profile/UserProfilePage';
 
 export default function YouRoute() {
   const session = useSession();
@@ -8,5 +8,5 @@ export default function YouRoute() {
     return null;
   }
 
-  return <YouPage user={session.user} />;
+  return <UserProfilePage user={session.user} />;
 }
