@@ -12,13 +12,17 @@ import {
 } from '@/entities/weight-entry';
 import { buildWeightHistoryRows, calculateWeightDelta } from '@/pages/log-weight/model/weight-history-view';
 import {
+  convertTypedWeightToKilograms,
+  MinimumWeightInDisplayUnit,
+  resolveWeightInputText,
+} from '@/pages/log-weight/model/weight-input';
+import {
   convertDisplayUnitToKilograms,
   convertKilogramsToDisplayUnit,
   type WeightUnit,
 } from '@/pages/log-weight/model/weight-unit-conversion';
 import { daysBefore, formatDateOnly } from '@/shared/lib/date';
 import { formatSignedNumber } from '@/shared/lib/format';
-import { parseDecimalInput } from '@/shared/lib/parse-decimal';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { LoadingBar } from '@/shared/ui/LoadingBar';
 import { SwipeToDeleteRow } from '@/shared/ui/SwipeToDeleteRow';
@@ -26,7 +30,6 @@ import { SwipeToDeleteRow } from '@/shared/ui/SwipeToDeleteRow';
 const WeightHistoryRangeDays = 30;
 const DefaultWeightKilograms = 70;
 const WeightStepInDisplayUnit = 0.1;
-const MinimumWeightInDisplayUnit = 0.1;
 const DisplayDecimalPlaces = 1;
 
 const HistoryDateFormatter = new Intl.DateTimeFormat('pt-BR', { month: 'short', day: 'numeric' });
@@ -71,7 +74,7 @@ export function LogWeightPage() {
   const targetLabel = targetWeightKilograms === null ? '—' : `${targetWeightKilograms.toFixed(DisplayDecimalPlaces)} kg`;
 
   const displayValue = convertKilogramsToDisplayUnit(weightKilograms, unit);
-  const weightInputText = editingText ?? displayValue.toFixed(DisplayDecimalPlaces);
+  const weightInputText = resolveWeightInputText(editingText, displayValue);
 
   function handleSelectUnit(nextUnit: WeightUnit) {
     setEditingText(null);
@@ -87,12 +90,12 @@ export function LogWeightPage() {
   function handleChangeWeightText(text: string) {
     setEditingText(text);
 
-    const parsedDisplayValue = parseDecimalInput(text);
-    if (parsedDisplayValue === null) {
+    const typedWeightKilograms = convertTypedWeightToKilograms(text, unit);
+    if (typedWeightKilograms === null) {
       return;
     }
 
-    setWeightKilograms(convertDisplayUnitToKilograms(Math.max(MinimumWeightInDisplayUnit, parsedDisplayValue), unit));
+    setWeightKilograms(typedWeightKilograms);
   }
 
   async function handleSave() {

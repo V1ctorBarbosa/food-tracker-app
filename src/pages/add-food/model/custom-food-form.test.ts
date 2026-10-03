@@ -26,6 +26,17 @@ describe('isCustomFoodFormValid with decimal commas', () => {
   test('returns true for macros typed with a comma', () => {
     expect(isCustomFoodFormValid({ ...validFields, protein: '0,7', fat: '0,2' })).toBe(true);
   });
+
+  test('enables saving the orange juice that could not be saved before (45 kcal, 0,7 / 10 / 0,2)', () => {
+    const orangeJuice: CustomFoodFormFields = { name: 'Suco de laranja', calories: '45', protein: '0,7', carbs: '10', fat: '0,2' };
+
+    expect(isCustomFoodFormValid(orangeJuice)).toBe(true);
+  });
+
+  test('still blocks saving while a field is half typed', () => {
+    expect(isCustomFoodFormValid({ ...validFields, protein: '0,' })).toBe(true);
+    expect(isCustomFoodFormValid({ ...validFields, protein: ',' })).toBe(false);
+  });
 });
 
 describe('isCustomFoodFormValid', () => {
