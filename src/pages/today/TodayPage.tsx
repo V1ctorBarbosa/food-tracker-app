@@ -74,18 +74,18 @@ export function TodayPage() {
   return (
     <SafeAreaView className="flex-1 bg-ft-bg">
       <ScrollView className="flex-1" contentContainerClassName="gap-3 px-6 pt-5" showsVerticalScrollIndicator={false}>
-        <View className="flex-row items-end justify-between">
-          <View>
-            <Text className="font-body-bold text-xs uppercase tracking-widest text-ft-muted">
-              {DateLabelFormatter.format(today)}
-            </Text>
-            <Text className="font-display text-5xl uppercase text-ft-calories">Hoje</Text>
+        <View className="gap-1">
+          <Text className="font-body-bold text-xs uppercase tracking-widest text-ft-muted">
+            {DateLabelFormatter.format(today)}
+          </Text>
+          <View className="flex-row items-center justify-between">
+            <Text className="font-display text-4xl uppercase text-ft-calories">Hoje</Text>
+            <Pressable
+              onPress={() => router.push('/log')}
+              className="h-[38px] w-[38px] items-center justify-center rounded-full bg-ft-calories">
+              <PlusIcon />
+            </Pressable>
           </View>
-          <Pressable
-            onPress={() => router.push('/log')}
-            className="h-[38px] w-[38px] items-center justify-center rounded-full bg-ft-calories">
-            <PlusIcon />
-          </Pressable>
         </View>
 
         <View className="gap-4 rounded-[22px] bg-ft-calories p-5">
@@ -177,9 +177,9 @@ export function TodayPage() {
 
 function PlusIcon() {
   return (
-    <View className="h-3 w-3">
-      <View className="absolute left-[5px] top-0 h-3 w-[2px] rounded-full bg-white" />
-      <View className="absolute left-0 top-[5px] h-[2px] w-3 rounded-full bg-white" />
+    <View className="h-3 w-3 items-center justify-center">
+      <View className="absolute h-3 w-[2px] rounded-full bg-white" />
+      <View className="absolute h-[2px] w-3 rounded-full bg-white" />
     </View>
   );
 }

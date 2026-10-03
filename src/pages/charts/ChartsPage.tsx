@@ -109,7 +109,7 @@ export function ChartsPage() {
   return (
     <SafeAreaView className="flex-1 bg-ft-bg">
       <ScrollView className="flex-1" contentContainerClassName="gap-4 px-6 pt-5 pb-8" showsVerticalScrollIndicator={false}>
-        <Text className="font-display text-5xl uppercase text-ft-calories">Gráficos</Text>
+        <Text className="font-display text-4xl uppercase text-ft-calories">Gráficos</Text>
 
         <View className="gap-2">
           <Text className="font-body-bold text-[10px] uppercase tracking-widest text-ft-muted-2">Período</Text>

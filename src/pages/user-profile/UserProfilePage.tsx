@@ -49,7 +49,7 @@ export function UserProfilePage({ user }: { user: AuthUser }) {
     <SafeAreaView className="flex-1 bg-ft-bg">
       <ScrollView className="flex-1" contentContainerClassName="gap-4 px-6 pt-5 pb-8" showsVerticalScrollIndicator={false}>
         <View className="flex-row items-center justify-between">
-          <Text className="font-display text-5xl uppercase text-ft-calories">Você</Text>
+          <Text className="font-display text-4xl uppercase text-ft-calories">Você</Text>
           <Pressable onPress={() => router.push('/edit-profile')} hitSlop={12}>
             <Text className="font-body-bold text-xs uppercase tracking-widest text-ft-calories">Editar</Text>
           </Pressable>
