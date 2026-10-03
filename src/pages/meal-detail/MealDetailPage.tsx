@@ -12,8 +12,11 @@ import {
   type MealItem,
   type MealItemRequest,
 } from '@/entities/meal';
+import { formatWholeNumber } from '@/shared/lib/format';
+import { AnimatedNumber } from '@/shared/ui/AnimatedNumber';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { LoadingBar } from '@/shared/ui/LoadingBar';
+import { ProgressBarFill } from '@/shared/ui/ProgressBar';
 import { SwipeToDeleteRow } from '@/shared/ui/SwipeToDeleteRow';
 
 const DateTimeLabelFormatter = new Intl.DateTimeFormat('pt-BR', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
@@ -91,7 +94,7 @@ export function MealDetailPage() {
         <Text className="font-display text-4xl uppercase text-ft-calories">{getMealTypeLabel(meal.mealType)}</Text>
 
         <View className="flex-row items-baseline gap-2">
-          <Text className="font-display text-5xl text-ft-calories">{meal.totalCalories}</Text>
+          <AnimatedNumber value={meal.totalCalories} format={formatWholeNumber} className="font-display text-5xl text-ft-calories" />
           <Text className="font-body-semibold text-base text-ft-muted-2">kcal</Text>
         </View>
 
@@ -141,21 +144,24 @@ function MacroBar({ protein, carbs, fat }: { protein: number; carbs: number; fat
   const proteinPercent = total > 0 ? (protein / total) * 100 : 0;
   const carbsPercent = total > 0 ? (carbs / total) * 100 : 0;
   const fatPercent = total > 0 ? (fat / total) * 100 : 0;
-  const proteinLabel = Math.round(protein);
-  const carbsLabel = Math.round(carbs);
-  const fatLabel = Math.round(fat);
 
   return (
     <View className="gap-2">
       <View className="h-2.5 flex-row overflow-hidden rounded-sm bg-ft-card">
-        <View className="bg-ft-protein" style={{ width: `${proteinPercent}%` }} />
-        <View className="bg-ft-carbs" style={{ width: `${carbsPercent}%` }} />
-        <View className="bg-ft-fat" style={{ width: `${fatPercent}%` }} />
+        <ProgressBarFill percent={proteinPercent} fillClassName="bg-ft-protein" />
+        <ProgressBarFill percent={carbsPercent} fillClassName="bg-ft-carbs" />
+        <ProgressBarFill percent={fatPercent} fillClassName="bg-ft-fat" />
       </View>
       <View className="flex-row gap-4">
-        <Text className="font-body-bold text-[10px] text-ft-protein">{proteinLabel}G PROTEÍNA</Text>
-        <Text className="font-body-bold text-[10px] text-ft-carbs">{carbsLabel}G CARBOIDRATO</Text>
-        <Text className="font-body-bold text-[10px] text-ft-fat">{fatLabel}G GORDURA</Text>
+        <Text className="font-body-bold text-[10px] text-ft-protein">
+          <AnimatedNumber value={protein} format={formatWholeNumber} />G PROTEÍNA
+        </Text>
+        <Text className="font-body-bold text-[10px] text-ft-carbs">
+          <AnimatedNumber value={carbs} format={formatWholeNumber} />G CARBOIDRATO
+        </Text>
+        <Text className="font-body-bold text-[10px] text-ft-fat">
+          <AnimatedNumber value={fat} format={formatWholeNumber} />G GORDURA
+        </Text>
       </View>
     </View>
   );

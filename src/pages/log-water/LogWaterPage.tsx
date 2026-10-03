@@ -11,6 +11,8 @@ import {
 } from '@/entities/water-entry';
 import { calculateProgressPercent, formatLiters } from '@/pages/today/model/dashboard-view';
 import { formatDateOnly } from '@/shared/lib/date';
+import { MotionDurationMs } from '@/shared/lib/motion';
+import { AnimatedNumber } from '@/shared/ui/AnimatedNumber';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { LoadingBar } from '@/shared/ui/LoadingBar';
 import { SegmentedProgressBar } from '@/shared/ui/SegmentedProgressBar';
@@ -85,7 +87,7 @@ export function LogWaterPage() {
           <View className="flex-row items-baseline justify-between">
             <Text className="font-body-bold text-xs uppercase tracking-widest text-sky-100">Hoje</Text>
             <Text className="font-display text-2xl text-white">
-              {formatLiters(totalMilliliters)}
+              <AnimatedNumber value={totalMilliliters} format={formatLiters} />
               <Text className="font-body-semibold text-sm"> / {formatLiters(dailyTargetMilliliters)} L</Text>
             </Text>
           </View>
@@ -93,6 +95,7 @@ export function LogWaterPage() {
             segmentCount={WaterBarSegmentCount}
             progressPercent={calculateProgressPercent(totalMilliliters, dailyTargetMilliliters)}
             filledColorClassName="bg-ft-water-dark"
+            durationMs={MotionDurationMs.countUp}
           />
         </View>
 

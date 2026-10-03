@@ -56,6 +56,17 @@ export function formatLiters(milliliters: number): string {
   return (milliliters / 1000).toFixed(1);
 }
 
+/** "N restantes" while under the calorie target, "N acima" once over it. */
+export function formatCaloriesRemaining(caloriesRemaining: number): string {
+  const roundedRemaining = Math.round(caloriesRemaining);
+
+  if (roundedRemaining >= 0) {
+    return `${roundedRemaining} restantes`;
+  }
+
+  return `${Math.abs(roundedRemaining)} acima`;
+}
+
 /** Clamped 0-100 progress toward a target; 0 when there is no target to measure against. */
 export function calculateProgressPercent(value: number, target: number | null): number {
   if (target === null || target <= 0) {

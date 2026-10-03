@@ -1,4 +1,15 @@
-import { formatMaxDecimals, formatSignedNumber } from './format';
+import { formatMaxDecimals, formatSignedNumber, formatWholeNumber } from './format';
+
+describe('formatWholeNumber', () => {
+  test.each([
+    [0, '0'],
+    [1949.6, '1.950'],
+    [2000, '2.000'],
+    [37.2, '37'],
+  ])('formats %p as %p', (value, expected) => {
+    expect(formatWholeNumber(value)).toBe(expected);
+  });
+});
 
 describe('formatSignedNumber', () => {
   test('prefixes a positive value with +', () => {

@@ -5,6 +5,7 @@ import {
   calculateWeightDelta,
   countDistinctMealTypes,
   findNextPendingMealType,
+  formatCaloriesRemaining,
   formatLiters,
   formatMacroGrams,
   getTodayNutrition,
@@ -41,6 +42,18 @@ describe('formatLiters', () => {
 
   test('rounds to one decimal place', () => {
     expect(formatLiters(1250)).toBe('1.3');
+  });
+});
+
+describe('formatCaloriesRemaining', () => {
+  test.each([
+    [600, '600 restantes'],
+    [0, '0 restantes'],
+    [-150, '150 acima'],
+    [12.6, '13 restantes'],
+    [-0.4, '0 restantes'],
+  ])('formats %p as %p', (caloriesRemaining, expected) => {
+    expect(formatCaloriesRemaining(caloriesRemaining)).toBe(expected);
   });
 });
 

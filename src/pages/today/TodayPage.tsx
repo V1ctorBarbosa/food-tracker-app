@@ -9,15 +9,20 @@ import {
   calculateWeightDelta,
   countDistinctMealTypes,
   findNextPendingMealType,
+  formatCaloriesRemaining,
   formatLiters,
   formatMacroGrams,
   getTodayNutrition,
 } from '@/pages/today/model/dashboard-view';
 import { daysBefore, formatDateOnly } from '@/shared/lib/date';
-import { formatSignedNumber } from '@/shared/lib/format';
+import { formatSignedNumber, formatWholeNumber } from '@/shared/lib/format';
+import { MotionDurationMs } from '@/shared/lib/motion';
+import { AnimatedNumber } from '@/shared/ui/AnimatedNumber';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { LoadingBar } from '@/shared/ui/LoadingBar';
+import { ProgressBar } from '@/shared/ui/ProgressBar';
 import { SegmentedProgressBar } from '@/shared/ui/SegmentedProgressBar';
+import { useCountUp } from '@/shared/ui/use-count-up';
 
 const DaysInWeek = 7;
 const WaterBarSegmentCount = 16;
@@ -26,6 +31,10 @@ const WeightDecimalPlaces = 1;
 
 const DateLabelFormatter = new Intl.DateTimeFormat('pt-BR', { weekday: 'long', month: 'short', day: 'numeric' });
 const WeekdayFormatter = new Intl.DateTimeFormat('pt-BR', { weekday: 'narrow' });
+
+function formatWeight(weightKilograms: number): string {
+  return weightKilograms.toFixed(WeightDecimalPlaces);
+}
 
 export function TodayPage() {
   const router = useRouter();
@@ -56,17 +65,12 @@ export function TodayPage() {
   const todaysMeals = todaysMealsQuery.data;
   const { calories, protein, carbs, fat, waterMilliliters } = getTodayNutrition(dashboard.nutritionHistory, todayDate);
 
-  const caloriesRemaining = dashboard.dailyCalorieTarget - calories;
-  const caloriesRemainingLabel =
-    caloriesRemaining >= 0 ? `${caloriesRemaining} restantes` : `${Math.abs(caloriesRemaining)} acima`;
-  const caloriesLabel = calories.toLocaleString('pt-BR');
   const calorieTargetLabel = dashboard.dailyCalorieTarget.toLocaleString('pt-BR');
 
   const loggedMealTypes = todaysMeals.map((meal) => meal.mealType);
   const pendingMealType = findNextPendingMealType(loggedMealTypes);
   const pendingMealTypeLabel = pendingMealType === null ? 'Tudo registrado' : `${getMealTypeLabel(pendingMealType)} pendente`;
 
-  const currentWeightLabel = dashboard.currentWeightKilograms?.toFixed(WeightDecimalPlaces) ?? '—';
   const targetWeightLabel = dashboard.targetWeightKilograms?.toFixed(WeightDecimalPlaces) ?? '—';
   const weightDelta = calculateWeightDelta(dashboard.weightHistory, dashboard.currentWeightKilograms);
   const weightDeltaLabel = weightDelta === null ? null : formatSignedNumber(weightDelta, WeightDeltaDecimalPlaces);
@@ -91,18 +95,18 @@ export function TodayPage() {
         <View className="gap-4 rounded-[22px] bg-ft-calories p-5">
           <View className="flex-row items-baseline justify-between">
             <Text className="font-body-bold text-xs uppercase tracking-widest text-blue-200">Calorias</Text>
-            <Text className="font-body-semibold text-xs text-blue-200">{caloriesRemainingLabel}</Text>
+            <CaloriesRemainingLabel calories={calories} calorieTarget={dashboard.dailyCalorieTarget} />
           </View>
           <View className="flex-row items-baseline gap-2">
-            <Text className="font-display text-6xl text-white">{caloriesLabel}</Text>
+            <AnimatedNumber value={calories} format={formatWholeNumber} className="font-display text-6xl text-white" />
             <Text className="font-display text-2xl text-blue-300">/ {calorieTargetLabel}</Text>
           </View>
-          <View className="h-2.5 flex-row overflow-hidden rounded-sm bg-ft-calories-dark">
-            <View
-              className="bg-ft-fat"
-              style={{ width: `${calculateProgressPercent(calories, dashboard.dailyCalorieTarget)}%` }}
-            />
-          </View>
+          <ProgressBar
+            progressPercent={calculateProgressPercent(calories, dashboard.dailyCalorieTarget)}
+            fillClassName="bg-ft-fat"
+            trackClassName="h-2.5 rounded-sm bg-ft-calories-dark"
+            durationMs={MotionDurationMs.countUp}
+          />
         </View>
 
         <View className="flex-row gap-2.5">
@@ -115,7 +119,7 @@ export function TodayPage() {
           <View className="flex-row items-baseline justify-between">
             <Text className="font-body-bold text-xs uppercase tracking-widest text-sky-100">Água</Text>
             <Text className="font-display text-xl text-white">
-              {formatLiters(waterMilliliters)}
+              <AnimatedNumber value={waterMilliliters} format={formatLiters} />
               <Text className="font-body-semibold text-xs"> / {formatLiters(dashboard.dailyWaterTargetMilliliters ?? 0)} L</Text>
             </Text>
           </View>
@@ -123,6 +127,7 @@ export function TodayPage() {
             segmentCount={WaterBarSegmentCount}
             progressPercent={calculateProgressPercent(waterMilliliters, dashboard.dailyWaterTargetMilliliters)}
             filledColorClassName="bg-ft-water-dark"
+            durationMs={MotionDurationMs.countUp}
           />
         </Pressable>
 
@@ -132,7 +137,11 @@ export function TodayPage() {
             className="flex-[1.15] gap-2 rounded-[18px] bg-ft-card px-4 py-3.5">
             <Text className="font-body-bold text-[10px] uppercase tracking-widest text-ft-muted-2">Peso</Text>
             <View className="flex-row items-baseline gap-1.5">
-              <Text className="font-display text-3xl text-ft-weight">{currentWeightLabel}</Text>
+              <AnimatedNumber
+                value={dashboard.currentWeightKilograms}
+                format={formatWeight}
+                className="font-display text-3xl text-ft-weight"
+              />
               <Text className="font-body-semibold text-xs text-ft-muted-2">kg</Text>
               {weightDeltaLabel !== null && (
                 <Text className="rounded bg-ft-weight px-1.5 py-0.5 font-body-bold text-[11px] text-white">{weightDeltaLabel}</Text>
@@ -144,7 +153,7 @@ export function TodayPage() {
           <View className="flex-1 gap-2 rounded-[18px] bg-ft-card px-4 py-3.5">
             <Text className="font-body-bold text-[10px] uppercase tracking-widest text-ft-muted-2">Refeições</Text>
             <Text className="font-display text-3xl text-ft-calories">
-              {countDistinctMealTypes(loggedMealTypes)}
+              <AnimatedNumber value={countDistinctMealTypes(loggedMealTypes)} format={formatWholeNumber} />
               <Text className="font-body text-base text-ft-muted-3"> / 4</Text>
             </Text>
             <Text className="font-body-semibold text-[10px] text-ft-muted-3">{pendingMealTypeLabel}</Text>
@@ -175,6 +184,13 @@ export function TodayPage() {
   );
 }
 
+function CaloriesRemainingLabel({ calories, calorieTarget }: { calories: number; calorieTarget: number }) {
+  const displayedCalories = useCountUp(calories);
+  const label = formatCaloriesRemaining(calorieTarget - displayedCalories);
+
+  return <Text className="font-body-semibold text-xs text-blue-200">{label}</Text>;
+}
+
 function PlusIcon() {
   return (
     <View className="h-3 w-3 items-center justify-center">
@@ -197,15 +213,13 @@ function MacroCard({
   colorClassName: string;
   barColorClassName: string;
 }) {
-  const valueLabel = formatMacroGrams(value);
-
   return (
     <View className="flex-1 gap-2.5 rounded-[18px] bg-ft-card p-3.5">
       <Text numberOfLines={1} className={`font-body-bold text-[10px] uppercase tracking-wide ${colorClassName}`}>
         {label}
       </Text>
       <Text numberOfLines={1} className={`font-display text-2xl ${colorClassName}`}>
-        {valueLabel}
+        <AnimatedNumber value={value} format={formatMacroGrams} />
         <Text className="text-xs">g</Text>
       </Text>
       {target !== null && <MacroTargetProgress value={value} target={target} barColorClassName={barColorClassName} />}
@@ -219,9 +233,12 @@ function MacroTargetProgress({ value, target, barColorClassName }: { value: numb
 
   return (
     <>
-      <View className="h-[7px] overflow-hidden rounded-sm bg-black/10">
-        <View className={barColorClassName} style={{ width: `${progressPercent}%` }} />
-      </View>
+      <ProgressBar
+        progressPercent={progressPercent}
+        fillClassName={barColorClassName}
+        trackClassName="h-[7px] rounded-sm bg-black/10"
+        durationMs={MotionDurationMs.countUp}
+      />
       <Text className="font-body-semibold text-[10px] text-ft-muted-3">{targetLabel}</Text>
     </>
   );
