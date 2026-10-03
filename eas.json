@@ -1,0 +1,16 @@
+{
+  "cli": {
+    "appVersionSource": "local"
+  },
+  "build": {
+    "preview": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "https://j36fwc3mz2xeksbsj3xvibethq0lypvr.lambda-url.us-east-2.on.aws"
+      }
+    }
+  }
+}
