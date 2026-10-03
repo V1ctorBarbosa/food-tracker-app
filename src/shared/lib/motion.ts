@@ -2,6 +2,8 @@
 export const MotionDurationMs = {
   bar: 420,
   countUp: 650,
+  tabColor: 180,
+  tabIndicator: 260,
 } as const;
 
 /** With reduce-motion on, every animation collapses to an instant change. */

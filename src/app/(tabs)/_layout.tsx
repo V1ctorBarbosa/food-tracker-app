@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useProfileQuery } from '@/entities/profile';
 import { useSession } from '@/entities/session';
 import { useAuthErrorRecovery } from '@/features/auth';
-import { theme } from '@/shared/config/theme';
+import { AnimatedTabBar } from '@/shared/ui/AnimatedTabBar';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { LoadingBar } from '@/shared/ui/LoadingBar';
 
@@ -39,14 +39,7 @@ export default function TabsLayout() {
   }
 
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: theme.light.calories,
-        tabBarInactiveTintColor: theme.light.tabInactive,
-        tabBarStyle: { backgroundColor: theme.light.tabBarBackground, borderTopColor: theme.light.tabBarBorder },
-        tabBarLabelStyle: { fontFamily: 'Archivo_700Bold', fontSize: 9, letterSpacing: 1, textTransform: 'uppercase' },
-      }}>
+    <Tabs tabBar={(tabBarProps) => <AnimatedTabBar {...tabBarProps} />} screenOptions={{ headerShown: false, animation: 'shift' }}>
       <Tabs.Screen
         name="today"
         options={{ title: 'Hoje', tabBarIcon: ({ color }) => <View className="h-4 w-4 rounded-[3px]" style={{ backgroundColor: color }} /> }}
