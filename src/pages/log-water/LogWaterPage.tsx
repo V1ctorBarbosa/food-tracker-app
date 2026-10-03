@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { LayoutAnimationConfig } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useDashboardQuery } from '@/entities/dashboard';
@@ -171,14 +172,16 @@ export function LogWaterPage() {
         {deleteWaterEntryMutation.isError && <ErrorMessage message="Não foi possível remover o registro. Tente novamente." />}
 
         {todaysEntries.length > 0 && (
-          <View className="gap-2.5">
-            <Text className="font-body-bold text-[10px] uppercase tracking-widest text-ft-muted-2">Registrado hoje</Text>
-            {todaysEntries.map((entry) => (
-              <SwipeToDeleteRow key={entry.id} onDelete={() => deleteWaterEntryMutation.mutateAsync(entry.id)}>
-                <WaterEntryRow entry={entry} />
-              </SwipeToDeleteRow>
-            ))}
-          </View>
+          <LayoutAnimationConfig skipEntering>
+            <View className="gap-2.5">
+              <Text className="font-body-bold text-[10px] uppercase tracking-widest text-ft-muted-2">Registrado hoje</Text>
+              {todaysEntries.map((entry) => (
+                <SwipeToDeleteRow key={entry.id} onDelete={() => deleteWaterEntryMutation.mutateAsync(entry.id)}>
+                  <WaterEntryRow entry={entry} />
+                </SwipeToDeleteRow>
+              ))}
+            </View>
+          </LayoutAnimationConfig>
         )}
       </ScrollView>
     </SafeAreaView>

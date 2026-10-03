@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { LayoutAnimationConfig } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useDashboardQuery } from '@/entities/dashboard';
@@ -149,14 +150,16 @@ export function LogWeightPage() {
         {deleteWeightEntryMutation.isError && <ErrorMessage message="Não foi possível remover o registro. Tente novamente." />}
 
         {sortedHistory.length > 0 && (
-          <View className="gap-2.5">
-            <Text className="font-body-bold text-[10px] uppercase tracking-widest text-ft-muted-2">Histórico</Text>
-            {buildWeightHistoryRows(sortedHistory).map(({ entry, deltaKilograms }) => (
-              <SwipeToDeleteRow key={entry.id} onDelete={() => deleteWeightEntryMutation.mutateAsync(entry.id)}>
-                <WeightEntryRow entry={entry} deltaKilograms={deltaKilograms} />
-              </SwipeToDeleteRow>
-            ))}
-          </View>
+          <LayoutAnimationConfig skipEntering>
+            <View className="gap-2.5">
+              <Text className="font-body-bold text-[10px] uppercase tracking-widest text-ft-muted-2">Histórico</Text>
+              {buildWeightHistoryRows(sortedHistory).map(({ entry, deltaKilograms }) => (
+                <SwipeToDeleteRow key={entry.id} onDelete={() => deleteWeightEntryMutation.mutateAsync(entry.id)}>
+                  <WeightEntryRow entry={entry} deltaKilograms={deltaKilograms} />
+                </SwipeToDeleteRow>
+              ))}
+            </View>
+          </LayoutAnimationConfig>
         )}
       </ScrollView>
     </SafeAreaView>

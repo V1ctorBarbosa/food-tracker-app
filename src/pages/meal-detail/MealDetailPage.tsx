@@ -118,7 +118,7 @@ export function MealDetailPage() {
             }
 
             return (
-              <SwipeToDeleteRow key={item.id} onDelete={() => handleRemoveItem(item)}>
+              <SwipeToDeleteRow key={item.id} animateEntry={false} onDelete={() => handleRemoveItem(item)}>
                 <MealItemRow item={item} foodName={foodName} />
               </SwipeToDeleteRow>
             );

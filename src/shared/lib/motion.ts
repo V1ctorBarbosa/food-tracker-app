@@ -2,6 +2,9 @@
 export const MotionDurationMs = {
   bar: 420,
   countUp: 650,
+  listEnter: 220,
+  listExit: 200,
+  listReflow: 260,
   tabColor: 180,
   tabIndicator: 260,
 } as const;

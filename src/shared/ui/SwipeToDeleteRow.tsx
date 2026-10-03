@@ -1,18 +1,43 @@
 import type { ReactNode } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
-import Animated, { FadeOut, useAnimatedStyle, type SharedValue } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeOut, LinearTransition, useAnimatedStyle, type SharedValue } from 'react-native-reanimated';
+
+import { MotionDurationMs } from '@/shared/lib/motion';
 
 const RightActionWidthPx = 84;
+
+function buildEnteringAnimation(animateEntry: boolean) {
+  if (!animateEntry) {
+    return undefined;
+  }
+
+  return FadeIn.duration(MotionDurationMs.listEnter);
+}
 
 /**
  * Swipe-left-to-delete, reused everywhere an entry can be removed (meal items, water entries,
  * weight entries, whole meals). Requires `GestureHandlerRootView` at the app root (set in
  * `app/_layout.tsx`) -- `ReanimatedSwipeable` doesn't work without it.
+ *
+ * A new row fades in and a removed one fades out, while the rows around it glide to close or
+ * open the gap. Pass `animateEntry={false}` where rows are swapped in for reasons other than a
+ * new entry (e.g. entering an edit mode), so they don't fade in each time.
  */
-export function SwipeToDeleteRow({ children, onDelete }: { children: ReactNode; onDelete: () => void | Promise<void> }) {
+export function SwipeToDeleteRow({
+  children,
+  onDelete,
+  animateEntry = true,
+}: {
+  children: ReactNode;
+  onDelete: () => void | Promise<void>;
+  animateEntry?: boolean;
+}) {
   return (
-    <Animated.View exiting={FadeOut.duration(220)}>
+    <Animated.View
+      entering={buildEnteringAnimation(animateEntry)}
+      exiting={FadeOut.duration(MotionDurationMs.listExit)}
+      layout={LinearTransition.duration(MotionDurationMs.listReflow)}>
       <ReanimatedSwipeable
         friction={2}
         rightThreshold={RightActionWidthPx / 2}
