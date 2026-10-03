@@ -65,10 +65,6 @@ function EditProfileForm({ profile }: { profile: UserProfile }) {
     <SafeAreaView className="flex-1 bg-ft-bg">
       <KeyboardAvoidingView className="flex-1" behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerClassName="gap-6 px-7 pt-4 pb-8" showsVerticalScrollIndicator={false}>
-          <Pressable onPress={() => router.back()} hitSlop={12} className="self-start">
-            <Text className="font-body-semibold text-sm text-ft-muted">← Você</Text>
-          </Pressable>
-
           <Text className="font-display text-4xl uppercase text-ft-calories">Editar perfil</Text>
 
           {ProfileFormSteps.map((step) => {

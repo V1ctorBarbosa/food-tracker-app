@@ -32,11 +32,6 @@ export function MealDetailPage() {
   if (wasMealDeleted) {
     return (
       <SafeAreaView className="flex-1 bg-ft-bg">
-        <View className="flex-row items-center justify-between px-7 pt-4">
-          <Pressable onPress={() => router.push('/today')} hitSlop={12}>
-            <Text className="font-body-semibold text-sm text-ft-muted">← Hoje</Text>
-          </Pressable>
-        </View>
         <View className="flex-1 items-center justify-center px-7">
           <Text className="text-center font-body-semibold text-sm text-ft-muted-2">Refeição excluída.</Text>
         </View>
@@ -78,10 +73,7 @@ export function MealDetailPage() {
 
   return (
     <SafeAreaView className="flex-1 bg-ft-bg">
-      <View className="flex-row items-center justify-between px-7 pt-4">
-        <Pressable onPress={() => router.push('/today')} hitSlop={12}>
-          <Text className="font-body-semibold text-sm text-ft-muted">← Hoje</Text>
-        </Pressable>
+      <View className="flex-row items-center justify-end px-7 pt-4">
         <Pressable
           onPress={() => setIsEditingItems((previous) => !previous)}
           hitSlop={12}

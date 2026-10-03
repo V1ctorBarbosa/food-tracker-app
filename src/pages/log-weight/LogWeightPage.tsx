@@ -1,4 +1,3 @@
-import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -31,7 +30,6 @@ const DisplayDecimalPlaces = 1;
 const HistoryDateFormatter = new Intl.DateTimeFormat('pt-BR', { month: 'short', day: 'numeric' });
 
 export function LogWeightPage() {
-  const router = useRouter();
   const today = new Date();
   const todayDate = formatDateOnly(today);
   const rangeStartDate = formatDateOnly(daysBefore(today, WeightHistoryRangeDays - 1));
@@ -95,13 +93,7 @@ export function LogWeightPage() {
 
   return (
     <SafeAreaView className="flex-1 bg-ft-bg">
-      <View className="flex-row items-center justify-between px-7 pt-4">
-        <Pressable onPress={() => router.back()} hitSlop={12}>
-          <Text className="font-body-semibold text-sm text-ft-muted">← Hoje</Text>
-        </Pressable>
-      </View>
-
-      <ScrollView className="flex-1" contentContainerClassName="gap-4 px-7 pt-4 pb-8" showsVerticalScrollIndicator={false}>
+      <ScrollView className="flex-1" contentContainerClassName="gap-4 px-7 pt-5 pb-8" showsVerticalScrollIndicator={false}>
         <Text className="font-display text-4xl uppercase text-ft-calories">Peso</Text>
 
         <View className="flex-row gap-2.5">

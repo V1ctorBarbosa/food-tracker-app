@@ -1,4 +1,3 @@
-import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -26,7 +25,6 @@ const MinimumCustomAmountMilliliters = 1;
 const EntryTimeFormatter = new Intl.DateTimeFormat('pt-BR', { hour: 'numeric', minute: '2-digit' });
 
 export function LogWaterPage() {
-  const router = useRouter();
   const todayDate = formatDateOnly(new Date());
   const [isCustomAmountVisible, setIsCustomAmountVisible] = useState(false);
   const [customAmountMilliliters, setCustomAmountMilliliters] = useState(DefaultCustomAmountMilliliters);
@@ -80,13 +78,7 @@ export function LogWaterPage() {
 
   return (
     <SafeAreaView className="flex-1 bg-ft-bg">
-      <View className="flex-row items-center justify-between px-7 pt-4">
-        <Pressable onPress={() => router.back()} hitSlop={12}>
-          <Text className="font-body-semibold text-sm text-ft-muted">← Hoje</Text>
-        </Pressable>
-      </View>
-
-      <ScrollView className="flex-1" contentContainerClassName="gap-4 px-7 pt-4 pb-8" showsVerticalScrollIndicator={false}>
+      <ScrollView className="flex-1" contentContainerClassName="gap-4 px-7 pt-5 pb-8" showsVerticalScrollIndicator={false}>
         <Text className="font-display text-4xl uppercase text-ft-calories">Água</Text>
 
         <View className="gap-3 rounded-[22px] bg-ft-water p-5">
