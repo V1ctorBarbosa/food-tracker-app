@@ -20,6 +20,7 @@ import { MotionDurationMs } from '@/shared/lib/motion';
 import { AnimatedNumber } from '@/shared/ui/AnimatedNumber';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { LoadingBar } from '@/shared/ui/LoadingBar';
+import { PressableScale } from '@/shared/ui/PressableScale';
 import { ProgressBar } from '@/shared/ui/ProgressBar';
 import { SegmentedProgressBar } from '@/shared/ui/SegmentedProgressBar';
 import { useCountUp } from '@/shared/ui/use-count-up';
@@ -115,7 +116,7 @@ export function TodayPage() {
           <MacroCard label="Gordura" value={fat} target={dashboard.dailyFatTargetGrams} colorClassName="text-ft-fat" barColorClassName="bg-ft-fat" />
         </View>
 
-        <Pressable onPress={() => router.push('/log-water')} className="gap-3 rounded-[20px] bg-ft-water p-4">
+        <PressableScale onPress={() => router.push('/log-water')} className="gap-3 rounded-[20px] bg-ft-water p-4">
           <View className="flex-row items-baseline justify-between">
             <Text className="font-body-bold text-xs uppercase tracking-widest text-sky-100">Água</Text>
             <Text className="font-display text-xl text-white">
@@ -129,10 +130,10 @@ export function TodayPage() {
             filledColorClassName="bg-ft-water-dark"
             durationMs={MotionDurationMs.countUp}
           />
-        </Pressable>
+        </PressableScale>
 
         <View className="flex-row gap-2.5">
-          <Pressable
+          <PressableScale
             onPress={() => router.push('/log-weight')}
             className="flex-[1.15] gap-2 rounded-[18px] bg-ft-card px-4 py-3.5">
             <Text className="font-body-bold text-[10px] uppercase tracking-widest text-ft-muted-2">Peso</Text>
@@ -148,7 +149,7 @@ export function TodayPage() {
               )}
             </View>
             <Text className="font-body-semibold text-[10px] text-ft-muted-3">Meta {targetWeightLabel} kg</Text>
-          </Pressable>
+          </PressableScale>
 
           <View className="flex-1 gap-2 rounded-[18px] bg-ft-card px-4 py-3.5">
             <Text className="font-body-bold text-[10px] uppercase tracking-widest text-ft-muted-2">Refeições</Text>
@@ -164,13 +165,13 @@ export function TodayPage() {
           <View className="gap-2">
             <Text className="font-body-bold text-[10px] uppercase tracking-widest text-ft-muted-2">Refeições de hoje</Text>
             {todaysMeals.map((meal) => (
-              <Pressable
+              <PressableScale
                 key={meal.id}
                 onPress={() => router.push({ pathname: '/meal/[id]', params: { id: meal.id } })}
                 className="flex-row items-center justify-between rounded-[18px] bg-ft-card px-4 py-3">
                 <Text className="font-body-semibold text-sm text-ft-calories">{getMealTypeLabel(meal.mealType)}</Text>
                 <Text className="font-body-semibold text-sm text-ft-muted-2">{meal.totalCalories} kcal</Text>
-              </Pressable>
+              </PressableScale>
             ))}
           </View>
         )}

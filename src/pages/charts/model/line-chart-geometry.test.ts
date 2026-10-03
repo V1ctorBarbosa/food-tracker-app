@@ -1,6 +1,38 @@
-import { buildAxisTicks, buildLineChartCoordinates, buildLineChartPath, mapValueToY, type PlotArea } from './line-chart-geometry';
+import {
+  buildAxisTicks,
+  buildLineChartCoordinates,
+  buildLineChartPath,
+  calculatePolylineLength,
+  mapValueToY,
+  type PlotArea,
+} from './line-chart-geometry';
 
 const fullPlotArea: PlotArea = { x: 0, y: 0, width: 100, height: 100 };
+
+describe('calculatePolylineLength', () => {
+  test('is zero without at least two coordinates', () => {
+    expect(calculatePolylineLength([])).toBe(0);
+    expect(calculatePolylineLength([{ x: 5, y: 5 }])).toBe(0);
+  });
+
+  test('measures a single horizontal segment', () => {
+    expect(calculatePolylineLength([{ x: 0, y: 10 }, { x: 40, y: 10 }])).toBe(40);
+  });
+
+  test('measures a diagonal segment with the Pythagorean distance', () => {
+    expect(calculatePolylineLength([{ x: 0, y: 0 }, { x: 3, y: 4 }])).toBe(5);
+  });
+
+  test('adds up every segment of the line', () => {
+    const coordinates = [
+      { x: 0, y: 0 },
+      { x: 3, y: 4 },
+      { x: 3, y: 14 },
+    ];
+
+    expect(calculatePolylineLength(coordinates)).toBe(15);
+  });
+});
 
 describe('buildAxisTicks', () => {
   test('rounds the domain outward to whole multiples of the step', () => {

@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, FadeInDown, FadeOut, FadeOutUp, LinearTransition } from 'react-native-reanimated';
-import Svg, { Line, Path, Text as SvgText } from 'react-native-svg';
+import Svg, { Line, Text as SvgText } from 'react-native-svg';
 
 import { useDashboardQuery } from '@/entities/dashboard';
+import { AnimatedChartLine } from '@/pages/charts/AnimatedChartLine';
 import { DateRangeCalendarPanel } from '@/pages/charts/DateRangeCalendarPanel';
 import {
   buildMetricSeries,
@@ -21,7 +22,14 @@ import {
   type DateRange,
   type DateRangePresetId,
 } from '@/pages/charts/model/date-range';
-import { buildAxisTicks, buildLineChartPath, mapValueToY, type PlotArea } from '@/pages/charts/model/line-chart-geometry';
+import { SelectionChip } from '@/pages/charts/SelectionChip';
+import {
+  buildAxisTicks,
+  buildLineChartCoordinates,
+  buildLineChartPath,
+  mapValueToY,
+  type PlotArea,
+} from '@/pages/charts/model/line-chart-geometry';
 import { useThemeColors } from '@/shared/config/theme';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { LoadingBar } from '@/shared/ui/LoadingBar';
@@ -181,17 +189,6 @@ export function ChartsPage() {
   );
 }
 
-function SelectionChip({ label, color, isSelected, onPress }: { label: string; color: string; isSelected: boolean; onPress: () => void }) {
-  const backgroundColor = isSelected ? color : 'transparent';
-  const textColorClassName = isSelected ? 'text-white' : 'text-ft-muted-2';
-
-  return (
-    <Pressable onPress={onPress} className="rounded-full border border-ft-muted-3/40 px-3.5 py-1.5" style={{ backgroundColor }}>
-      <Text className={`font-body-bold text-[11px] uppercase tracking-widest ${textColorClassName}`}>{label}</Text>
-    </Pressable>
-  );
-}
-
 function MetricChartCard({
   definition,
   points,
@@ -215,6 +212,7 @@ function MetricChartCard({
     height: ChartHeight - 2 * ChartVerticalPadding,
   };
   const pathData = buildLineChartPath(values, axisTicks.domainMin, axisTicks.domainMax, plotArea);
+  const coordinates = buildLineChartCoordinates(values, axisTicks.domainMin, axisTicks.domainMax, plotArea);
 
   const firstDateLabel = points.length > 0 ? ChartDateFormatter.format(new Date(`${points[0].date}T00:00:00`)) : null;
   const lastDateLabel = points.length > 0 ? ChartDateFormatter.format(new Date(`${points[points.length - 1].date}T00:00:00`)) : null;
@@ -252,7 +250,7 @@ function MetricChartCard({
                 labelColor={mutedColor}
               />
             ))}
-            <Path d={pathData} stroke={color} strokeWidth={ChartStrokeWidth} fill="none" />
+            <AnimatedChartLine pathData={pathData} coordinates={coordinates} color={color} strokeWidth={ChartStrokeWidth} />
           </Svg>
           <View className="flex-row justify-between" style={{ paddingLeft: ChartLeftAxisWidth }}>
             <Text className="font-body-semibold text-[9px] text-ft-muted-3">{firstDateLabel}</Text>

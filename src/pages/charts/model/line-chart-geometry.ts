@@ -57,6 +57,19 @@ export function buildLineChartCoordinates(values: number[], domainMin: number, d
   }));
 }
 
+/** Total length of the straight segments joining the coordinates, in the chart's own units. */
+export function calculatePolylineLength(coordinates: ChartCoordinate[]): number {
+  let totalLength = 0;
+
+  for (let index = 1; index < coordinates.length; index++) {
+    const previous = coordinates[index - 1];
+    const current = coordinates[index];
+    totalLength += Math.hypot(current.x - previous.x, current.y - previous.y);
+  }
+
+  return totalLength;
+}
+
 /** An SVG path `d` string connecting each value's coordinate, or null when there aren't enough points to draw a line. */
 export function buildLineChartPath(values: number[], domainMin: number, domainMax: number, plotArea: PlotArea): string | null {
   if (values.length < MinimumPointCountForLine) {

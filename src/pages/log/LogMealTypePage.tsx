@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { Pressable, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { getMealTypeLabel, useTodaysMealsQuery, type MealType } from '@/entities/meal';
@@ -7,6 +7,7 @@ import { findNextPendingMealType } from '@/pages/today/model/dashboard-view';
 import { formatDateOnly } from '@/shared/lib/date';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { LoadingBar } from '@/shared/ui/LoadingBar';
+import { PressableScale } from '@/shared/ui/PressableScale';
 
 const AllMealTypes: readonly MealType[] = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
 
@@ -57,13 +58,13 @@ export function LogMealTypePage() {
           {AllMealTypes.map((mealType) => {
             const isPending = mealType === pendingMealType;
             return (
-              <Pressable
+              <PressableScale
                 key={mealType}
                 onPress={() => handlePressMealType(mealType)}
                 className={`h-[58px] flex-row items-center justify-between rounded-2xl px-5 ${isPending ? 'bg-ft-calories' : 'bg-ft-card'}`}>
                 <Text className={`font-body-bold text-lg ${isPending ? 'text-white' : 'text-ft-calories'}`}>{getMealTypeLabel(mealType)}</Text>
                 {isPending && <Text className="font-body-semibold text-xs uppercase tracking-widest text-blue-200">Pendente</Text>}
-              </Pressable>
+              </PressableScale>
             );
           })}
         </View>
