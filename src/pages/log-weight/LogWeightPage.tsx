@@ -18,6 +18,7 @@ import {
 } from '@/pages/log-weight/model/weight-unit-conversion';
 import { daysBefore, formatDateOnly } from '@/shared/lib/date';
 import { formatSignedNumber } from '@/shared/lib/format';
+import { parseDecimalInput } from '@/shared/lib/parse-decimal';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { LoadingBar } from '@/shared/ui/LoadingBar';
 import { SwipeToDeleteRow } from '@/shared/ui/SwipeToDeleteRow';
@@ -37,6 +38,7 @@ export function LogWeightPage() {
 
   const [unit, setUnit] = useState<WeightUnit>('Kilograms');
   const [weightKilograms, setWeightKilograms] = useState(DefaultWeightKilograms);
+  const [editingText, setEditingText] = useState<string | null>(null);
 
   const dashboardQuery = useDashboardQuery(rangeStartDate, todayDate);
   const weightHistoryQuery = useWeightHistoryQuery(rangeStartDate, todayDate);
@@ -69,19 +71,24 @@ export function LogWeightPage() {
   const targetLabel = targetWeightKilograms === null ? '—' : `${targetWeightKilograms.toFixed(DisplayDecimalPlaces)} kg`;
 
   const displayValue = convertKilogramsToDisplayUnit(weightKilograms, unit);
+  const weightInputText = editingText ?? displayValue.toFixed(DisplayDecimalPlaces);
 
   function handleSelectUnit(nextUnit: WeightUnit) {
+    setEditingText(null);
     setUnit(nextUnit);
   }
 
   function handleAdjustWeight(deltaInDisplayUnit: number) {
+    setEditingText(null);
     const nextDisplayValue = Math.max(MinimumWeightInDisplayUnit, displayValue + deltaInDisplayUnit);
     setWeightKilograms(convertDisplayUnitToKilograms(nextDisplayValue, unit));
   }
 
   function handleChangeWeightText(text: string) {
-    const parsedDisplayValue = Number(text);
-    if (text.trim().length === 0 || Number.isNaN(parsedDisplayValue)) {
+    setEditingText(text);
+
+    const parsedDisplayValue = parseDecimalInput(text);
+    if (parsedDisplayValue === null) {
       return;
     }
 
@@ -118,8 +125,9 @@ export function LogWeightPage() {
             </Pressable>
             <View className="flex-row items-baseline gap-1.5">
               <TextInput
-                value={displayValue.toFixed(DisplayDecimalPlaces)}
+                value={weightInputText}
                 onChangeText={handleChangeWeightText}
+                onBlur={() => setEditingText(null)}
                 keyboardType="numeric"
                 selectTextOnFocus
                 className="w-28 border-0 text-center font-display text-4xl text-white outline-none"

@@ -13,6 +13,7 @@ import {
 import { calculateProgressPercent, formatLiters } from '@/pages/today/model/dashboard-view';
 import { formatDateOnly } from '@/shared/lib/date';
 import { MotionDurationMs } from '@/shared/lib/motion';
+import { parseDecimalInput } from '@/shared/lib/parse-decimal';
 import { AnimatedNumber } from '@/shared/ui/AnimatedNumber';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { LoadingBar } from '@/shared/ui/LoadingBar';
@@ -71,8 +72,8 @@ export function LogWaterPage() {
   }
 
   function handleChangeCustomAmountText(text: string) {
-    const parsedAmount = Number(text);
-    if (text.trim().length === 0 || Number.isNaN(parsedAmount)) {
+    const parsedAmount = parseDecimalInput(text);
+    if (parsedAmount === null) {
       return;
     }
 

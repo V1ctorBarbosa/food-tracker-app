@@ -1,3 +1,5 @@
+import { parseDecimalInput } from '@/shared/lib/parse-decimal';
+
 export type CustomFoodFormFields = {
   name: string;
   calories: string;
@@ -6,8 +8,29 @@ export type CustomFoodFormFields = {
   fat: string;
 };
 
-/** True when the name is filled in and every macro field is a non-empty, parseable number. */
+export type CustomFoodValues = {
+  name: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+};
+
+/** The typed fields as numbers, or null unless the name is filled in and every macro is a number (comma or dot). */
+export function parseCustomFoodFields(fields: CustomFoodFormFields): CustomFoodValues | null {
+  const name = fields.name.trim();
+  const calories = parseDecimalInput(fields.calories);
+  const protein = parseDecimalInput(fields.protein);
+  const carbs = parseDecimalInput(fields.carbs);
+  const fat = parseDecimalInput(fields.fat);
+
+  if (name.length === 0 || calories === null || protein === null || carbs === null || fat === null) {
+    return null;
+  }
+
+  return { name, calories, protein, carbs, fat };
+}
+
 export function isCustomFoodFormValid(fields: CustomFoodFormFields): boolean {
-  const macroValues = [fields.calories, fields.protein, fields.carbs, fields.fat];
-  return fields.name.trim().length > 0 && macroValues.every((value) => value.trim().length > 0 && !Number.isNaN(Number(value)));
+  return parseCustomFoodFields(fields) !== null;
 }

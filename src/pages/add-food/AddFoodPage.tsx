@@ -13,9 +13,10 @@ import {
   type MealItemRequest,
   type MealType,
 } from '@/entities/meal';
-import { isCustomFoodFormValid } from '@/pages/add-food/model/custom-food-form';
+import { parseCustomFoodFields } from '@/pages/add-food/model/custom-food-form';
 import { calculateNutritionForQuantity, type NutritionPreview } from '@/pages/add-food/model/nutrition-preview';
 import { theme } from '@/shared/config/theme';
+import { parseDecimalInput } from '@/shared/lib/parse-decimal';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { LoadingBar } from '@/shared/ui/LoadingBar';
 
@@ -76,34 +77,29 @@ export function AddFoodPage() {
   }
 
   function handleChangeQuantityText(text: string) {
-    const parsedQuantity = Number(text);
-    if (text.trim().length === 0 || Number.isNaN(parsedQuantity)) {
+    const parsedQuantity = parseDecimalInput(text);
+    if (parsedQuantity === null) {
       return;
     }
 
     setQuantityGrams(Math.max(MinimumQuantityGrams, parsedQuantity));
   }
 
-  const canSaveCustomFood = isCustomFoodFormValid({
+  const parsedCustomFood = parseCustomFoodFields({
     name: customFoodName,
     calories: customFoodCalories,
     protein: customFoodProtein,
     carbs: customFoodCarbs,
     fat: customFoodFat,
   });
+  const canSaveCustomFood = parsedCustomFood !== null;
 
   async function handleSaveCustomFood() {
-    if (!canSaveCustomFood) {
+    if (parsedCustomFood === null) {
       return;
     }
 
-    const createdFood = await createCustomFoodMutation.mutateAsync({
-      name: customFoodName,
-      calories: Number(customFoodCalories),
-      protein: Number(customFoodProtein),
-      carbs: Number(customFoodCarbs),
-      fat: Number(customFoodFat),
-    });
+    const createdFood = await createCustomFoodMutation.mutateAsync(parsedCustomFood);
 
     handleSelectFood(createdFood);
     setIsCustomFoodFormVisible(false);
