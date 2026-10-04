@@ -7,6 +7,7 @@ import { getMealTypeLabel, useDayMealsQuery } from '@/entities/meal';
 import { formatDayTitle, formatLongDate, formatMealsHeading, useSelectedDay } from '@/entities/selected-day';
 import { ThemeToggleButton } from '@/features/theme';
 import { resolveDayTitleSizeClassName } from '@/pages/today/model/day-header';
+import { type MacroCardStyle, type MacroKind, resolveMacroCardStyle } from '@/pages/today/model/macro-card-style';
 import {
   calculateProgressPercent,
   calculateWeightDelta,
@@ -131,9 +132,9 @@ export function TodayPage() {
         </View>
 
         <View className="flex-row gap-2.5">
-          <MacroCard label="Proteína" value={protein} target={dashboard.dailyProteinTargetGrams} colorClassName="text-ft-protein-ink" barColorClassName="bg-ft-protein" />
-          <MacroCard label="Carb" value={carbs} target={dashboard.dailyCarbsTargetGrams} colorClassName="text-ft-carbs-ink" barColorClassName="bg-ft-carbs" />
-          <MacroCard label="Gordura" value={fat} target={dashboard.dailyFatTargetGrams} colorClassName="text-ft-fat-ink" barColorClassName="bg-ft-fat" />
+          <MacroCard label="Proteína" macro="protein" value={protein} target={dashboard.dailyProteinTargetGrams} />
+          <MacroCard label="Carb" macro="carbs" value={carbs} target={dashboard.dailyCarbsTargetGrams} />
+          <MacroCard label="Gordura" macro="fat" value={fat} target={dashboard.dailyFatTargetGrams} />
         </View>
 
         <PressableScale onPress={() => router.push('/log-water')} className="gap-3 rounded-[20px] bg-ft-water p-4">
@@ -230,34 +231,24 @@ function PlusIcon() {
   );
 }
 
-function MacroCard({
-  label,
-  value,
-  target,
-  colorClassName,
-  barColorClassName,
-}: {
-  label: string;
-  value: number;
-  target: number | null;
-  colorClassName: string;
-  barColorClassName: string;
-}) {
+function MacroCard({ label, macro, value, target }: { label: string; macro: MacroKind; value: number; target: number | null }) {
+  const style = resolveMacroCardStyle(macro);
+
   return (
-    <View className="flex-1 gap-2.5 rounded-[18px] bg-ft-card p-3.5">
-      <Text numberOfLines={1} className={`font-body-bold text-[10px] uppercase tracking-wide ${colorClassName}`}>
+    <View className={`flex-1 gap-2.5 rounded-[18px] p-3.5 ${style.backgroundClassName}`}>
+      <Text numberOfLines={1} className={`font-body-bold text-[10px] uppercase tracking-wide ${style.textClassName}`}>
         {label}
       </Text>
-      <Text numberOfLines={1} className={`font-display text-2xl ${colorClassName}`}>
+      <Text numberOfLines={1} className={`font-display text-2xl ${style.textClassName}`}>
         <AnimatedNumber value={value} format={formatMacroGrams} />
         <Text className="text-xs">g</Text>
       </Text>
-      {target !== null && <MacroTargetProgress value={value} target={target} barColorClassName={barColorClassName} />}
+      {target !== null && <MacroTargetProgress value={value} target={target} style={style} />}
     </View>
   );
 }
 
-function MacroTargetProgress({ value, target, barColorClassName }: { value: number; target: number; barColorClassName: string }) {
+function MacroTargetProgress({ value, target, style }: { value: number; target: number; style: MacroCardStyle }) {
   const targetLabel = `de ${target}g`;
   const progressPercent = calculateProgressPercent(value, target);
 
@@ -265,11 +256,11 @@ function MacroTargetProgress({ value, target, barColorClassName }: { value: numb
     <>
       <ProgressBar
         progressPercent={progressPercent}
-        fillClassName={barColorClassName}
-        trackClassName="h-[7px] rounded-sm bg-black/10"
+        fillClassName={style.fillClassName}
+        trackClassName={`h-[7px] rounded-sm ${style.trackClassName}`}
         durationMs={MotionDurationMs.countUp}
       />
-      <Text className="font-body-semibold text-[10px] text-ft-muted-3">{targetLabel}</Text>
+      <Text className={`font-body-semibold text-[10px] opacity-90${style.textClassName}`}>{targetLabel}</Text>
     </>
   );
 }

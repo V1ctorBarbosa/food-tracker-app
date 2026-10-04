@@ -8,6 +8,7 @@ import { signOutOfSession } from '@/features/auth';
 import { useNightMode } from '@/features/theme';
 import { buildBodyStatRows, buildTargetRows, type ProfileStatRow } from '@/pages/user-profile/model/profile-view';
 import type { AuthUser } from '@/shared/api/auth-gateway';
+import { useThemeColors } from '@/shared/config/theme';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { LoadingBar } from '@/shared/ui/LoadingBar';
 import { ToggleSwitch } from '@/shared/ui/ToggleSwitch';
@@ -16,6 +17,7 @@ export function UserProfilePage({ user }: { user: AuthUser }) {
   const router = useRouter();
   const profileQuery = useProfileQuery();
   const { isNightMode, toggleNightMode } = useNightMode();
+  const themeColors = useThemeColors();
   const [isSigningOut, setIsSigningOut] = useState(false);
 
   async function handlePressSignOut() {
@@ -89,7 +91,7 @@ export function UserProfilePage({ user }: { user: AuthUser }) {
           disabled={isSigningOut}
           className="h-[52px] items-center justify-center rounded-full border border-ft-carbs/30 disabled:opacity-50">
           {isSigningOut ? (
-            <ActivityIndicator color="black" />
+            <ActivityIndicator color={themeColors.ink} />
           ) : (
             <Text className="font-body-bold text-sm uppercase tracking-widest text-ft-carbs-ink">Sair</Text>
           )}
@@ -113,10 +115,14 @@ function ProfileSection({ title, rows }: { title: string; rows: ProfileStatRow[]
 }
 
 function ProfileStatRowView({ row, isLast }: { row: ProfileStatRow; isLast: boolean }) {
-  const borderClassName = isLast ? '' : 'border-b border-black/5';
+  const colors = useThemeColors();
+  let borderClassName = 'border-b';
+  if (isLast) {
+    borderClassName = '';
+  }
 
   return (
-    <View className={`flex-row items-center justify-between py-3 ${borderClassName}`}>
+    <View className={`flex-row items-center justify-between py-3 ${borderClassName}`} style={{ borderColor: colors.hair }}>
       <Text className="font-body-semibold text-sm text-ft-muted-2">{row.label}</Text>
       <Text numberOfLines={1} className="font-body-bold text-sm text-ft-ink">
         {row.value}

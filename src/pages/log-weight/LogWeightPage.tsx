@@ -188,7 +188,7 @@ function StatCard({ label, value }: { label: string; value: string }) {
 
 function UnitToggleButton({ label, isSelected, onPress }: { label: string; isSelected: boolean; onPress: () => void }) {
   return (
-    <Pressable onPress={onPress} className={`rounded-full px-4 py-1.5 ${isSelected ? 'bg-white' : 'bg-black/15'}`}>
+    <Pressable onPress={onPress} className={`rounded-full px-4 py-1.5 ${isSelected ? 'bg-white' : 'bg-black/20'}`}>
       <Text className={`font-body-bold text-xs uppercase tracking-widest ${isSelected ? 'text-ft-weight-ink' : 'text-white'}`}>{label}</Text>
     </Pressable>
   );

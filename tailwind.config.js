@@ -33,6 +33,7 @@ module.exports = {
         'ft-carbs-ink': color('carbsInk'),
         'ft-fat': color('fat'),
         'ft-fat-ink': color('fatInk'),
+        'ft-on-fat': color('onFat'),
         'ft-water': color('water'),
         'ft-water-dark': color('waterDark'),
         'ft-weight': color('weight'),
