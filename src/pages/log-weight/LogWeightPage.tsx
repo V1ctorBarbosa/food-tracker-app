@@ -10,6 +10,7 @@ import {
   useWeightHistoryQuery,
   type WeightEntry,
 } from '@/entities/weight-entry';
+import { buildLoggedAt, useSelectedDay } from '@/entities/selected-day';
 import { buildWeightHistoryRows, calculateWeightDelta } from '@/pages/log-weight/model/weight-history-view';
 import {
   convertTypedWeightToKilograms,
@@ -21,7 +22,7 @@ import {
   convertKilogramsToDisplayUnit,
   type WeightUnit,
 } from '@/pages/log-weight/model/weight-unit-conversion';
-import { daysBefore, formatDateOnly } from '@/shared/lib/date';
+import { daysBefore, formatDateOnly, parseDateOnly } from '@/shared/lib/date';
 import { formatSignedNumber } from '@/shared/lib/format';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { LoadingBar } from '@/shared/ui/LoadingBar';
@@ -35,16 +36,15 @@ const DisplayDecimalPlaces = 1;
 const HistoryDateFormatter = new Intl.DateTimeFormat('pt-BR', { month: 'short', day: 'numeric' });
 
 export function LogWeightPage() {
-  const today = new Date();
-  const todayDate = formatDateOnly(today);
-  const rangeStartDate = formatDateOnly(daysBefore(today, WeightHistoryRangeDays - 1));
+  const { day } = useSelectedDay();
+  const rangeStartDate = formatDateOnly(daysBefore(parseDateOnly(day), WeightHistoryRangeDays - 1));
 
   const [unit, setUnit] = useState<WeightUnit>('Kilograms');
   const [weightKilograms, setWeightKilograms] = useState(DefaultWeightKilograms);
   const [editingText, setEditingText] = useState<string | null>(null);
 
-  const dashboardQuery = useDashboardQuery(rangeStartDate, todayDate);
-  const weightHistoryQuery = useWeightHistoryQuery(rangeStartDate, todayDate);
+  const dashboardQuery = useDashboardQuery(rangeStartDate, day);
+  const weightHistoryQuery = useWeightHistoryQuery(rangeStartDate, day);
   const createWeightEntryMutation = useCreateWeightEntryMutation();
   const deleteWeightEntryMutation = useDeleteWeightEntryMutation();
 
@@ -99,7 +99,7 @@ export function LogWeightPage() {
   }
 
   async function handleSave() {
-    await createWeightEntryMutation.mutateAsync({ weightKilograms });
+    await createWeightEntryMutation.mutateAsync({ weightKilograms, loggedAt: buildLoggedAt(day, new Date()) });
   }
 
   return (

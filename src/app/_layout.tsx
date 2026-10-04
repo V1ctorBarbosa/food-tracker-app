@@ -14,6 +14,7 @@ import { useColorScheme } from 'nativewind';
 import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
+import { SelectedDayProvider } from '@/entities/selected-day';
 import { useSession } from '@/entities/session';
 import { useThemeBootstrap } from '@/features/theme';
 import { queryClient } from '@/shared/api/query-client';
@@ -65,18 +66,20 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <QueryClientProvider client={queryClient}>
-        <ThemeRoot>
-          <ThemeProvider value={navigationTheme}>
-            <StatusBar style={statusBarStyle} />
-            <Stack screenOptions={{ headerShown: false, animation: 'slide_from_right' }}>
-              <Stack.Screen name="index" options={{ animation: 'fade' }} />
-              <Stack.Screen name="(tabs)" options={{ animation: 'fade' }} />
-              <Stack.Screen name="sign-in" options={{ animation: 'fade' }} />
-              <Stack.Screen name="onboarding" options={{ animation: 'fade' }} />
-              <Stack.Screen name="add-food" options={{ animation: 'slide_from_bottom' }} />
-            </Stack>
-          </ThemeProvider>
-        </ThemeRoot>
+        <SelectedDayProvider>
+          <ThemeRoot>
+            <ThemeProvider value={navigationTheme}>
+              <StatusBar style={statusBarStyle} />
+              <Stack screenOptions={{ headerShown: false, animation: 'slide_from_right' }}>
+                <Stack.Screen name="index" options={{ animation: 'fade' }} />
+                <Stack.Screen name="(tabs)" options={{ animation: 'fade' }} />
+                <Stack.Screen name="sign-in" options={{ animation: 'fade' }} />
+                <Stack.Screen name="onboarding" options={{ animation: 'fade' }} />
+                <Stack.Screen name="add-food" options={{ animation: 'slide_from_bottom' }} />
+              </Stack>
+            </ThemeProvider>
+          </ThemeRoot>
+        </SelectedDayProvider>
       </QueryClientProvider>
     </GestureHandlerRootView>
   );

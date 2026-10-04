@@ -7,11 +7,11 @@ import { useDashboardQuery } from '@/entities/dashboard';
 import {
   useCreateWaterEntryMutation,
   useDeleteWaterEntryMutation,
-  useTodaysWaterEntriesQuery,
+  useDayWaterEntriesQuery,
   type WaterEntry,
 } from '@/entities/water-entry';
+import { buildLoggedAt, formatDayTitle, formatEntriesHeading, useSelectedDay } from '@/entities/selected-day';
 import { calculateProgressPercent, formatLiters } from '@/pages/today/model/dashboard-view';
-import { formatDateOnly } from '@/shared/lib/date';
 import { MotionDurationMs } from '@/shared/lib/motion';
 import { parseDecimalInput } from '@/shared/lib/parse-decimal';
 import { AnimatedNumber } from '@/shared/ui/AnimatedNumber';
@@ -29,16 +29,16 @@ const MinimumCustomAmountMilliliters = 1;
 const EntryTimeFormatter = new Intl.DateTimeFormat('pt-BR', { hour: 'numeric', minute: '2-digit' });
 
 export function LogWaterPage() {
-  const todayDate = formatDateOnly(new Date());
+  const { day, daysBack } = useSelectedDay();
   const [isCustomAmountVisible, setIsCustomAmountVisible] = useState(false);
   const [customAmountMilliliters, setCustomAmountMilliliters] = useState(DefaultCustomAmountMilliliters);
 
-  const dashboardQuery = useDashboardQuery(todayDate, todayDate);
-  const todaysEntriesQuery = useTodaysWaterEntriesQuery(todayDate);
+  const dashboardQuery = useDashboardQuery(day, day);
+  const dayEntriesQuery = useDayWaterEntriesQuery(day);
   const createWaterEntryMutation = useCreateWaterEntryMutation();
   const deleteWaterEntryMutation = useDeleteWaterEntryMutation();
 
-  if (dashboardQuery.isPending || todaysEntriesQuery.isPending) {
+  if (dashboardQuery.isPending || dayEntriesQuery.isPending) {
     return (
       <SafeAreaView className="flex-1 items-center justify-center bg-ft-bg">
         <LoadingBar />
@@ -46,7 +46,7 @@ export function LogWaterPage() {
     );
   }
 
-  if (dashboardQuery.isError || todaysEntriesQuery.isError) {
+  if (dashboardQuery.isError || dayEntriesQuery.isError) {
     return (
       <SafeAreaView className="flex-1 items-center justify-center bg-ft-bg px-7">
         <ErrorMessage />
@@ -55,15 +55,17 @@ export function LogWaterPage() {
   }
 
   const dailyTargetMilliliters = dashboardQuery.data.dailyWaterTargetMilliliters ?? 0;
-  const todaysEntries = todaysEntriesQuery.data;
-  const totalMilliliters = todaysEntries.reduce((sum, entry) => sum + entry.amountMilliliters, 0);
+  const dayTitle = formatDayTitle(daysBack);
+  const entriesHeading = formatEntriesHeading(daysBack);
+  const dayEntries = dayEntriesQuery.data;
+  const totalMilliliters = dayEntries.reduce((sum, entry) => sum + entry.amountMilliliters, 0);
 
   async function handleQuickAdd(amountMilliliters: number) {
-    await createWaterEntryMutation.mutateAsync({ loggedAt: new Date().toISOString(), amountMilliliters });
+    await createWaterEntryMutation.mutateAsync({ loggedAt: buildLoggedAt(day, new Date()), amountMilliliters });
   }
 
   async function handleAddCustomAmount() {
-    await createWaterEntryMutation.mutateAsync({ loggedAt: new Date().toISOString(), amountMilliliters: customAmountMilliliters });
+    await createWaterEntryMutation.mutateAsync({ loggedAt: buildLoggedAt(day, new Date()), amountMilliliters: customAmountMilliliters });
     setIsCustomAmountVisible(false);
   }
 
@@ -87,7 +89,7 @@ export function LogWaterPage() {
 
         <View className="gap-3 rounded-[22px] bg-ft-water p-5">
           <View className="flex-row items-baseline justify-between">
-            <Text className="font-body-bold text-xs uppercase tracking-widest text-sky-100">Hoje</Text>
+            <Text className="font-body-bold text-xs uppercase tracking-widest text-sky-100">{dayTitle}</Text>
             <Text className="font-display text-2xl text-white">
               <AnimatedNumber value={totalMilliliters} format={formatLiters} />
               <Text className="font-body-semibold text-sm"> / {formatLiters(dailyTargetMilliliters)} L</Text>
@@ -172,11 +174,11 @@ export function LogWaterPage() {
         {createWaterEntryMutation.isError && <ErrorMessage message="Não foi possível registrar a água. Tente novamente." />}
         {deleteWaterEntryMutation.isError && <ErrorMessage message="Não foi possível remover o registro. Tente novamente." />}
 
-        {todaysEntries.length > 0 && (
+        {dayEntries.length > 0 && (
           <LayoutAnimationConfig skipEntering>
             <View className="gap-2.5">
-              <Text className="font-body-bold text-[10px] uppercase tracking-widest text-ft-muted-2">Registrado hoje</Text>
-              {todaysEntries.map((entry) => (
+              <Text className="font-body-bold text-[10px] uppercase tracking-widest text-ft-muted-2">{entriesHeading}</Text>
+              {dayEntries.map((entry) => (
                 <SwipeToDeleteRow key={entry.id} onDelete={() => deleteWaterEntryMutation.mutateAsync(entry.id)}>
                   <WaterEntryRow entry={entry} />
                 </SwipeToDeleteRow>

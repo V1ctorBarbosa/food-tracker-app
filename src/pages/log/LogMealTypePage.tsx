@@ -2,9 +2,9 @@ import { useRouter } from 'expo-router';
 import { Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { getMealTypeLabel, useTodaysMealsQuery, type MealType } from '@/entities/meal';
+import { getMealTypeLabel, useDayMealsQuery, type MealType } from '@/entities/meal';
+import { formatLogLabel, useSelectedDay } from '@/entities/selected-day';
 import { findNextPendingMealType } from '@/pages/today/model/dashboard-view';
-import { formatDateOnly } from '@/shared/lib/date';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { LoadingBar } from '@/shared/ui/LoadingBar';
 import { PressableScale } from '@/shared/ui/PressableScale';
@@ -13,10 +13,10 @@ const AllMealTypes: readonly MealType[] = ['Breakfast', 'Lunch', 'Dinner', 'Snac
 
 export function LogMealTypePage() {
   const router = useRouter();
-  const today = formatDateOnly(new Date());
-  const todaysMealsQuery = useTodaysMealsQuery(today);
+  const { day, daysBack } = useSelectedDay();
+  const dayMealsQuery = useDayMealsQuery(day);
 
-  if (todaysMealsQuery.isPending) {
+  if (dayMealsQuery.isPending) {
     return (
       <SafeAreaView className="flex-1 items-center justify-center bg-ft-bg">
         <LoadingBar />
@@ -24,7 +24,7 @@ export function LogMealTypePage() {
     );
   }
 
-  if (todaysMealsQuery.isError) {
+  if (dayMealsQuery.isError) {
     return (
       <SafeAreaView className="flex-1 items-center justify-center bg-ft-bg px-7">
         <ErrorMessage />
@@ -32,12 +32,13 @@ export function LogMealTypePage() {
     );
   }
 
-  const todaysMeals = todaysMealsQuery.data;
-  const loggedMealTypes = todaysMeals.map((meal) => meal.mealType);
+  const dayMeals = dayMealsQuery.data;
+  const logLabel = formatLogLabel(daysBack, day);
+  const loggedMealTypes = dayMeals.map((meal) => meal.mealType);
   const pendingMealType = findNextPendingMealType(loggedMealTypes);
 
   function handlePressMealType(mealType: MealType) {
-    const existingMeal = todaysMeals.find((meal) => meal.mealType === mealType);
+    const existingMeal = dayMeals.find((meal) => meal.mealType === mealType);
     if (existingMeal !== undefined) {
       router.push({ pathname: '/meal/[id]', params: { id: existingMeal.id } });
       return;
@@ -50,7 +51,7 @@ export function LogMealTypePage() {
     <SafeAreaView className="flex-1 bg-ft-bg">
       <View className="flex-1 justify-center gap-8 px-7">
         <View className="gap-2">
-          <Text className="font-body-bold text-xs uppercase tracking-widest text-ft-muted">Registrar refeição</Text>
+          <Text className="font-body-bold text-xs uppercase tracking-widest text-ft-muted">{logLabel}</Text>
           <Text className="font-display text-4xl uppercase leading-tight text-ft-ink">O que você vai registrar?</Text>
         </View>
 

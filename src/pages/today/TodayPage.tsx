@@ -3,7 +3,8 @@ import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useDashboardQuery } from '@/entities/dashboard';
-import { getMealTypeLabel, useTodaysMealsQuery } from '@/entities/meal';
+import { getMealTypeLabel, useDayMealsQuery } from '@/entities/meal';
+import { formatDayTitle, formatLongDate, formatMealsHeading, useSelectedDay } from '@/entities/selected-day';
 import {
   calculateProgressPercent,
   calculateWeightDelta,
@@ -14,7 +15,7 @@ import {
   formatMacroGrams,
   getTodayNutrition,
 } from '@/pages/today/model/dashboard-view';
-import { daysBefore, formatDateOnly } from '@/shared/lib/date';
+import { daysBefore, formatDateOnly, parseDateOnly } from '@/shared/lib/date';
 import { formatSignedNumber, formatWholeNumber } from '@/shared/lib/format';
 import { MotionDurationMs } from '@/shared/lib/motion';
 import { AnimatedNumber } from '@/shared/ui/AnimatedNumber';
@@ -30,7 +31,6 @@ const WaterBarSegmentCount = 16;
 const WeightDeltaDecimalPlaces = 1;
 const WeightDecimalPlaces = 1;
 
-const DateLabelFormatter = new Intl.DateTimeFormat('pt-BR', { weekday: 'long', month: 'short', day: 'numeric' });
 const WeekdayFormatter = new Intl.DateTimeFormat('pt-BR', { weekday: 'narrow' });
 
 function formatWeight(weightKilograms: number): string {
@@ -39,14 +39,13 @@ function formatWeight(weightKilograms: number): string {
 
 export function TodayPage() {
   const router = useRouter();
-  const today = new Date();
-  const todayDate = formatDateOnly(today);
-  const rangeStartDate = formatDateOnly(daysBefore(today, DaysInWeek - 1));
+  const { day, daysBack } = useSelectedDay();
+  const rangeStartDate = formatDateOnly(daysBefore(parseDateOnly(day), DaysInWeek - 1));
 
-  const dashboardQuery = useDashboardQuery(rangeStartDate, todayDate);
-  const todaysMealsQuery = useTodaysMealsQuery(todayDate);
+  const dashboardQuery = useDashboardQuery(rangeStartDate, day);
+  const dayMealsQuery = useDayMealsQuery(day);
 
-  if (dashboardQuery.isPending || todaysMealsQuery.isPending) {
+  if (dashboardQuery.isPending || dayMealsQuery.isPending) {
     return (
       <SafeAreaView className="flex-1 items-center justify-center bg-ft-bg">
         <LoadingBar />
@@ -54,7 +53,7 @@ export function TodayPage() {
     );
   }
 
-  if (dashboardQuery.isError || todaysMealsQuery.isError) {
+  if (dashboardQuery.isError || dayMealsQuery.isError) {
     return (
       <SafeAreaView className="flex-1 items-center justify-center bg-ft-bg px-7">
         <ErrorMessage />
@@ -63,12 +62,15 @@ export function TodayPage() {
   }
 
   const dashboard = dashboardQuery.data;
-  const todaysMeals = todaysMealsQuery.data;
-  const { calories, protein, carbs, fat, waterMilliliters } = getTodayNutrition(dashboard.nutritionHistory, todayDate);
+  const dayMeals = dayMealsQuery.data;
+  const { calories, protein, carbs, fat, waterMilliliters } = getTodayNutrition(dashboard.nutritionHistory, day);
 
   const calorieTargetLabel = dashboard.dailyCalorieTarget.toLocaleString('pt-BR');
+  const longDateLabel = formatLongDate(day);
+  const dayTitle = formatDayTitle(daysBack);
+  const mealsHeading = formatMealsHeading(daysBack);
 
-  const loggedMealTypes = todaysMeals.map((meal) => meal.mealType);
+  const loggedMealTypes = dayMeals.map((meal) => meal.mealType);
   const pendingMealType = findNextPendingMealType(loggedMealTypes);
   const pendingMealTypeLabel = pendingMealType === null ? 'Tudo registrado' : `${getMealTypeLabel(pendingMealType)} pendente`;
 
@@ -81,10 +83,10 @@ export function TodayPage() {
       <ScrollView className="flex-1" contentContainerClassName="gap-3 px-6 pt-5" showsVerticalScrollIndicator={false}>
         <View className="gap-1">
           <Text className="font-body-bold text-xs uppercase tracking-widest text-ft-muted">
-            {DateLabelFormatter.format(today)}
+            {longDateLabel}
           </Text>
           <View className="flex-row items-center justify-between">
-            <Text className="font-display text-4xl uppercase text-ft-ink">Hoje</Text>
+            <Text className="font-display text-4xl uppercase text-ft-ink">{dayTitle}</Text>
             <Pressable
               onPress={() => router.push('/log')}
               className="h-[38px] w-[38px] items-center justify-center rounded-full bg-ft-calories">
@@ -161,10 +163,10 @@ export function TodayPage() {
           </View>
         </View>
 
-        {todaysMeals.length > 0 && (
+        {dayMeals.length > 0 && (
           <View className="gap-2">
-            <Text className="font-body-bold text-[10px] uppercase tracking-widest text-ft-muted-2">Refeições de hoje</Text>
-            {todaysMeals.map((meal) => (
+            <Text className="font-body-bold text-[10px] uppercase tracking-widest text-ft-muted-2">{mealsHeading}</Text>
+            {dayMeals.map((meal) => (
               <PressableScale
                 key={meal.id}
                 onPress={() => router.push({ pathname: '/meal/[id]', params: { id: meal.id } })}

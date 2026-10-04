@@ -6,4 +6,6 @@ export type WeightEntry = {
 
 export type CreateWeightEntryRequest = {
   weightKilograms: number;
+  /** When the weight was taken; omitted means now. Lets a forgotten day be filled in later. */
+  loggedAt?: string;
 };

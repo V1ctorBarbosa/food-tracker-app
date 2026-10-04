@@ -35,6 +35,8 @@ export type MealItemRequest = {
 export type CreateMealRequest = {
   mealType: MealType;
   items: MealItemRequest[];
+  /** When the meal was eaten; omitted means now. Lets a forgotten day be filled in later. */
+  loggedAt?: string;
 };
 
 export type UpdateMealRequest = {

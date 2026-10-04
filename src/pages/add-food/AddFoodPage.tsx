@@ -13,6 +13,7 @@ import {
   type MealItemRequest,
   type MealType,
 } from '@/entities/meal';
+import { buildLoggedAt, useSelectedDay } from '@/entities/selected-day';
 import { parseCustomFoodFields } from '@/pages/add-food/model/custom-food-form';
 import { calculateNutritionForQuantity, type NutritionPreview } from '@/pages/add-food/model/nutrition-preview';
 import { useThemeColors } from '@/shared/config/theme';
@@ -26,6 +27,7 @@ const MinimumQuantityGrams = 1;
 export function AddFoodPage() {
   const router = useRouter();
   const colors = useThemeColors();
+  const { day } = useSelectedDay();
   const { mealType, mealId } = useLocalSearchParams<{ mealType: MealType; mealId?: string }>();
   const [searchText, setSearchText] = useState('');
   const [selectedFood, setSelectedFood] = useState<Food | null>(null);
@@ -141,7 +143,11 @@ export function AddFoodPage() {
       return;
     }
 
-    const createdMeal = await createMealMutation.mutateAsync({ mealType, items: [newItem] });
+    const createdMeal = await createMealMutation.mutateAsync({
+      mealType,
+      items: [newItem],
+      loggedAt: buildLoggedAt(day, new Date()),
+    });
     router.replace({ pathname: '/meal/[id]', params: { id: createdMeal.id } });
   }
 
