@@ -105,7 +105,7 @@ export function LogWeightPage() {
   return (
     <SafeAreaView className="flex-1 bg-ft-bg">
       <ScrollView className="flex-1" contentContainerClassName="gap-4 px-7 pt-5 pb-8" showsVerticalScrollIndicator={false}>
-        <Text className="font-display text-4xl uppercase text-ft-calories">Peso</Text>
+        <Text className="font-display text-4xl uppercase text-ft-ink">Peso</Text>
 
         <View className="flex-row gap-2.5">
           <StatCard label="Último registro" value={lastEntryLabel} />
@@ -152,7 +152,7 @@ export function LogWeightPage() {
             {createWeightEntryMutation.isPending ? (
               <ActivityIndicator color="black" />
             ) : (
-              <Text className="font-body-bold text-sm text-ft-weight">Salvar</Text>
+              <Text className="font-body-bold text-sm text-ft-weight-ink">Salvar</Text>
             )}
           </Pressable>
         </View>
@@ -181,7 +181,7 @@ function StatCard({ label, value }: { label: string; value: string }) {
   return (
     <View className="flex-1 gap-2 rounded-[18px] bg-ft-card px-3 py-3.5">
       <Text className="font-body-bold text-[9px] uppercase tracking-widest text-ft-muted-2">{label}</Text>
-      <Text className="font-display text-xl text-ft-weight">{value}</Text>
+      <Text className="font-display text-xl text-ft-weight-ink">{value}</Text>
     </View>
   );
 }
@@ -189,7 +189,7 @@ function StatCard({ label, value }: { label: string; value: string }) {
 function UnitToggleButton({ label, isSelected, onPress }: { label: string; isSelected: boolean; onPress: () => void }) {
   return (
     <Pressable onPress={onPress} className={`rounded-full px-4 py-1.5 ${isSelected ? 'bg-white' : 'bg-black/15'}`}>
-      <Text className={`font-body-bold text-xs uppercase tracking-widest ${isSelected ? 'text-ft-weight' : 'text-white'}`}>{label}</Text>
+      <Text className={`font-body-bold text-xs uppercase tracking-widest ${isSelected ? 'text-ft-weight-ink' : 'text-white'}`}>{label}</Text>
     </Pressable>
   );
 }
@@ -201,10 +201,10 @@ function WeightEntryRow({ entry, deltaKilograms }: { entry: WeightEntry; deltaKi
 
   return (
     <View className="flex-row items-center justify-between rounded-2xl bg-ft-card px-4 py-3">
-      <Text className="font-body-semibold text-sm text-ft-calories">{dateLabel}</Text>
+      <Text className="font-body-semibold text-sm text-ft-ink">{dateLabel}</Text>
       <View className="flex-row items-center gap-3">
         {deltaLabel !== null && <Text className="font-body-semibold text-xs text-ft-muted-2">{deltaLabel}</Text>}
-        <Text className="font-body-bold text-sm text-ft-weight">{weightLabel}</Text>
+        <Text className="font-body-bold text-sm text-ft-weight-ink">{weightLabel}</Text>
       </View>
     </View>
   );

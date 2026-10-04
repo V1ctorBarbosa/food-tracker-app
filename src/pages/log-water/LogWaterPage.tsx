@@ -83,7 +83,7 @@ export function LogWaterPage() {
   return (
     <SafeAreaView className="flex-1 bg-ft-bg">
       <ScrollView className="flex-1" contentContainerClassName="gap-4 px-7 pt-5 pb-8" showsVerticalScrollIndicator={false}>
-        <Text className="font-display text-4xl uppercase text-ft-calories">Água</Text>
+        <Text className="font-display text-4xl uppercase text-ft-ink">Água</Text>
 
         <View className="gap-3 rounded-[22px] bg-ft-water p-5">
           <View className="flex-row items-baseline justify-between">
@@ -145,7 +145,7 @@ export function LogWaterPage() {
                   onChangeText={handleChangeCustomAmountText}
                   keyboardType="numeric"
                   selectTextOnFocus
-                  className="w-24 border-0 text-center font-display text-4xl text-ft-calories outline-none"
+                  className="w-24 border-0 text-center font-display text-4xl text-ft-ink outline-none"
                 />
                 <Text className="font-body-semibold text-sm text-ft-muted-2">ml</Text>
               </View>
@@ -212,7 +212,7 @@ function QuickAddButton({
 function WaterEntryRow({ entry }: { entry: WaterEntry }) {
   return (
     <View className="flex-row items-center justify-between rounded-2xl bg-ft-card px-4 py-3">
-      <Text className="font-body-semibold text-sm text-ft-calories">{entry.amountMilliliters} ml</Text>
+      <Text className="font-body-semibold text-sm text-ft-ink">{entry.amountMilliliters} ml</Text>
       <Text className="font-body text-xs text-ft-muted-2">{EntryTimeFormatter.format(new Date(entry.loggedAt))}</Text>
     </View>
   );

@@ -31,7 +31,7 @@ const CalendarCellTextClassNames: Record<CalendarCellState, string> = {
   single: 'font-body-bold text-xs text-white',
   start: 'font-body-bold text-xs text-white',
   end: 'font-body-bold text-xs text-white',
-  'in-range': 'font-body-semibold text-xs text-ft-calories',
+  'in-range': 'font-body-semibold text-xs text-ft-ink',
 };
 
 const DisabledCalendarCellTextClassName = 'font-body-semibold text-xs text-ft-muted-3/50';
@@ -101,16 +101,16 @@ export function DateRangeCalendarPanel({
           hitSlop={10}
           style={NoWebFocusOutlineStyle}
           className="h-8 w-8 items-center justify-center">
-          <Text className="font-display text-xl text-ft-calories">‹</Text>
+          <Text className="font-display text-xl text-ft-ink">‹</Text>
         </Pressable>
-        <Text className="font-body-bold text-xs uppercase tracking-widest text-ft-calories">{monthLabel}</Text>
+        <Text className="font-body-bold text-xs uppercase tracking-widest text-ft-ink">{monthLabel}</Text>
         <Pressable
           onPress={goToNextMonth}
           disabled={isNextMonthDisabled}
           hitSlop={10}
           style={NoWebFocusOutlineStyle}
           className="h-8 w-8 items-center justify-center disabled:opacity-30">
-          <Text className="font-display text-xl text-ft-calories">›</Text>
+          <Text className="font-display text-xl text-ft-ink">›</Text>
         </Pressable>
       </View>
 

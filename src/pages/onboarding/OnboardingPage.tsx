@@ -95,10 +95,10 @@ export function OnboardingPage() {
             <Text className="font-body-bold text-xs uppercase tracking-widest text-ft-muted">
               Passo {currentStepIndex + 1} de {ProfileFormSteps.length}
             </Text>
-            <Text className="font-display text-3xl uppercase leading-tight text-ft-calories">{currentStep.question}</Text>
+            <Text className="font-display text-3xl uppercase leading-tight text-ft-ink">{currentStep.question}</Text>
             <View className="mt-6 gap-2">
               <ProfileFieldInput step={currentStep} control={control} autoFocus onSubmitEditing={handlePressNext} />
-              {validationMessage !== null && <Text className="font-body text-xs text-ft-carbs">{validationMessage}</Text>}
+              {validationMessage !== null && <Text className="font-body text-xs text-ft-carbs-ink">{validationMessage}</Text>}
             </View>
           </Animated.View>
         </View>

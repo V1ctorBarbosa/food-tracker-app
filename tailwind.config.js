@@ -1,9 +1,10 @@
-const theme = require('./src/shared/config/theme.json');
-
-// Tailwind class colors are static at build time, so they always reflect the light palette for
-// now. theme.light and theme.dark are identical until a real dark palette is designed -- see
-// src/shared/config/theme.ts for the runtime useThemeColors() hook that will pick between them.
-const colors = theme.light;
+// Colours are CSS variables, not fixed hex: ThemeRoot (src/shared/ui/ThemeRoot.tsx) sets them from
+// the light or dark palette in src/shared/config/theme.json, so one class works in both schemes.
+// The channel form "rgb(var(--x) / <alpha-value>)" keeps opacity modifiers like bg-ft-carbs/30 working.
+// A palette key maps to its variable the same way themeKeyToCssVariable() does:
+// caloriesDark -> --ft-calories-dark.
+const cssVariable = (paletteKey) => `--ft-${paletteKey.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase()}`;
+const color = (paletteKey) => `rgb(var(${cssVariable(paletteKey)}) / <alpha-value>)`;
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
@@ -20,19 +21,26 @@ module.exports = {
         'body-bold': ['Archivo_700Bold'],
       },
       colors: {
-        'ft-bg': colors.background,
-        'ft-card': colors.card,
-        'ft-calories': colors.calories,
-        'ft-calories-dark': colors.caloriesDark,
-        'ft-protein': colors.protein,
-        'ft-carbs': colors.carbs,
-        'ft-fat': colors.fat,
-        'ft-water': colors.water,
-        'ft-water-dark': colors.waterDark,
-        'ft-weight': colors.weight,
-        'ft-muted': colors.textMuted,
-        'ft-muted-2': colors.textMuted2,
-        'ft-muted-3': colors.textMuted3,
+        'ft-bg': color('background'),
+        'ft-card': color('card'),
+        'ft-ink': color('ink'),
+        'ft-calories': color('calories'),
+        'ft-calories-dark': color('caloriesDark'),
+        'ft-calories-ink': color('caloriesInk'),
+        'ft-protein': color('protein'),
+        'ft-protein-ink': color('proteinInk'),
+        'ft-carbs': color('carbs'),
+        'ft-carbs-ink': color('carbsInk'),
+        'ft-fat': color('fat'),
+        'ft-fat-ink': color('fatInk'),
+        'ft-water': color('water'),
+        'ft-water-dark': color('waterDark'),
+        'ft-weight': color('weight'),
+        'ft-weight-ink': color('weightInk'),
+        'ft-muted': color('textMuted'),
+        'ft-muted-2': color('textMuted2'),
+        'ft-muted-3': color('textMuted3'),
+        'ft-hair-strong': color('hairStrong'),
       },
     },
   },

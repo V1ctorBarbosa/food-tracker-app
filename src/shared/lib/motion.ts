@@ -12,6 +12,7 @@ export const MotionDurationMs = {
   press: 120,
   tabColor: 180,
   tabIndicator: 260,
+  toggle: 200,
 } as const;
 
 /** With reduce-motion on, every animation collapses to an instant change. */

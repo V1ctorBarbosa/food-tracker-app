@@ -40,7 +40,6 @@ const ChartLeftAxisWidth = 32;
 const ChartRightPadding = 6;
 const ChartVerticalPadding = 10;
 const ChartStrokeWidth = 2.5;
-const GridlineColor = 'rgba(0, 0, 0, 0.08)';
 const AxisLabelFontSize = 8;
 const AxisLabelGap = 4;
 const AxisLabelBaselineOffset = 3;
@@ -117,7 +116,7 @@ export function ChartsPage() {
   return (
     <SafeAreaView className="flex-1 bg-ft-bg">
       <ScrollView className="flex-1" contentContainerClassName="gap-4 px-6 pt-5 pb-8" showsVerticalScrollIndicator={false}>
-        <Text className="font-display text-4xl uppercase text-ft-calories">Gráficos</Text>
+        <Text className="font-display text-4xl uppercase text-ft-ink">Gráficos</Text>
 
         <View className="gap-2">
           <Text className="font-body-bold text-[10px] uppercase tracking-widest text-ft-muted-2">Período</Text>
@@ -182,6 +181,7 @@ export function ChartsPage() {
             points={seriesByMetricId[definition.id]}
             color={themeColors[definition.colorKey]}
             mutedColor={themeColors.textMuted3}
+            gridColor={themeColors.grid}
           />
         ))}
       </ScrollView>
@@ -194,11 +194,13 @@ function MetricChartCard({
   points,
   color,
   mutedColor,
+  gridColor,
 }: {
   definition: MetricDefinition;
   points: ChartPoint[];
   color: string;
   mutedColor: string;
+  gridColor: string;
 }) {
   const latestPoint = points.length > 0 ? points[points.length - 1] : null;
   const latestValueLabel = latestPoint === null ? '—' : formatMetricValue(definition, latestPoint.value);
@@ -248,6 +250,7 @@ function MetricChartCard({
                 plotArea={plotArea}
                 label={formatMetricValue(definition, tickValue)}
                 labelColor={mutedColor}
+                gridColor={gridColor}
               />
             ))}
             <AnimatedChartLine pathData={pathData} coordinates={coordinates} color={color} strokeWidth={ChartStrokeWidth} />
@@ -269,6 +272,7 @@ function AxisGridline({
   plotArea,
   label,
   labelColor,
+  gridColor,
 }: {
   tickValue: number;
   domainMin: number;
@@ -276,12 +280,13 @@ function AxisGridline({
   plotArea: PlotArea;
   label: string;
   labelColor: string;
+  gridColor: string;
 }) {
   const y = mapValueToY(tickValue, domainMin, domainMax, plotArea);
 
   return (
     <>
-      <Line x1={plotArea.x} y1={y} x2={plotArea.x + plotArea.width} y2={y} stroke={GridlineColor} strokeWidth={1} />
+      <Line x1={plotArea.x} y1={y} x2={plotArea.x + plotArea.width} y2={y} stroke={gridColor} strokeWidth={1} />
       <SvgText x={plotArea.x - AxisLabelGap} y={y + AxisLabelBaselineOffset} fontSize={AxisLabelFontSize} fill={labelColor} textAnchor="end">
         {label}
       </SvgText>

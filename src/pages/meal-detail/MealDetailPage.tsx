@@ -81,7 +81,7 @@ export function MealDetailPage() {
           onPress={() => setIsEditingItems((previous) => !previous)}
           hitSlop={12}
           className={`rounded-full px-4 py-1.5 ${isEditingItems ? 'bg-ft-card' : 'bg-white'}`}>
-          <Text className={`font-body-bold text-sm ${isEditingItems ? 'text-ft-calories' : 'text-ft-carbs'}`}>
+          <Text className={`font-body-bold text-sm ${isEditingItems ? 'text-ft-ink' : 'text-ft-carbs-ink'}`}>
             {isEditingItems ? 'Concluído' : 'Editar'}
           </Text>
         </Pressable>
@@ -91,10 +91,10 @@ export function MealDetailPage() {
         <Text className="font-body-bold text-xs uppercase tracking-widest text-ft-muted">
           {DateTimeLabelFormatter.format(new Date(meal.loggedAt))}
         </Text>
-        <Text className="font-display text-4xl uppercase text-ft-calories">{getMealTypeLabel(meal.mealType)}</Text>
+        <Text className="font-display text-4xl uppercase text-ft-ink">{getMealTypeLabel(meal.mealType)}</Text>
 
         <View className="flex-row items-baseline gap-2">
-          <AnimatedNumber value={meal.totalCalories} format={formatWholeNumber} className="font-display text-5xl text-ft-calories" />
+          <AnimatedNumber value={meal.totalCalories} format={formatWholeNumber} className="font-display text-5xl text-ft-ink" />
           <Text className="font-body-semibold text-base text-ft-muted-2">kcal</Text>
         </View>
 
@@ -105,7 +105,7 @@ export function MealDetailPage() {
             {meal.items.length} {meal.items.length === 1 ? 'item' : 'itens'}
           </Text>
           {isEditingItems && (
-            <Text className="font-body-semibold text-[10px] text-ft-calories">Deslize para a esquerda para apagar</Text>
+            <Text className="font-body-semibold text-[10px] text-ft-ink">Deslize para a esquerda para apagar</Text>
           )}
         </View>
 
@@ -131,8 +131,8 @@ export function MealDetailPage() {
 
         <Pressable
           onPress={() => router.push({ pathname: '/add-food', params: { mealType: meal.mealType, mealId: meal.id } })}
-          className="h-[54px] items-center justify-center rounded-2xl border border-ft-calories bg-transparent">
-          <Text className="font-body-bold text-sm text-ft-calories">Adicionar item</Text>
+          className="h-[54px] items-center justify-center rounded-2xl border border-ft-ink bg-transparent">
+          <Text className="font-body-bold text-sm text-ft-ink">Adicionar item</Text>
         </Pressable>
       </ScrollView>
     </SafeAreaView>
@@ -153,13 +153,13 @@ function MacroBar({ protein, carbs, fat }: { protein: number; carbs: number; fat
         <ProgressBarFill percent={fatPercent} fillClassName="bg-ft-fat" />
       </View>
       <View className="flex-row gap-4">
-        <Text className="font-body-bold text-[10px] text-ft-protein">
+        <Text className="font-body-bold text-[10px] text-ft-protein-ink">
           <AnimatedNumber value={protein} format={formatWholeNumber} />G PROTEÍNA
         </Text>
-        <Text className="font-body-bold text-[10px] text-ft-carbs">
+        <Text className="font-body-bold text-[10px] text-ft-carbs-ink">
           <AnimatedNumber value={carbs} format={formatWholeNumber} />G CARBOIDRATO
         </Text>
-        <Text className="font-body-bold text-[10px] text-ft-fat">
+        <Text className="font-body-bold text-[10px] text-ft-fat-ink">
           <AnimatedNumber value={fat} format={formatWholeNumber} />G GORDURA
         </Text>
       </View>
@@ -174,10 +174,10 @@ function MealItemRow({ item, foodName }: { item: MealItem; foodName: string }) {
   return (
     <View className="flex-row items-center justify-between rounded-2xl bg-ft-card px-4 py-3">
       <View className="flex-1 gap-0.5">
-        <Text className="font-body-semibold text-sm text-ft-calories">{foodName}</Text>
+        <Text className="font-body-semibold text-sm text-ft-ink">{foodName}</Text>
         <Text className="font-body text-xs text-ft-muted-2">{macroSummaryLabel}</Text>
       </View>
-      <Text className="font-body-bold text-sm text-ft-calories">{item.calories}</Text>
+      <Text className="font-body-bold text-sm text-ft-ink">{item.calories}</Text>
     </View>
   );
 }

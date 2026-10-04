@@ -3,7 +3,7 @@ import { Pressable, Text, TextInput, View } from 'react-native';
 
 import type { ProfileFormStep, ProfileFormValues } from '@/entities/profile/model/profile-form-schema';
 import { parseDisplayValue } from '@/entities/profile/model/profile-form-schema';
-import { theme } from '@/shared/config/theme';
+import { useThemeColors } from '@/shared/config/theme';
 
 /** Renders the text/select/number input for one profile field, wired to a shared react-hook-form control. */
 export function ProfileFieldInput({
@@ -18,6 +18,8 @@ export function ProfileFieldInput({
   autoFocus?: boolean;
   onSubmitEditing: () => void;
 }) {
+  const colors = useThemeColors();
+
   if (step.kind === 'text') {
     return (
       <Controller
@@ -30,10 +32,10 @@ export function ProfileFieldInput({
             onChangeText={field.onChange}
             onBlur={field.onBlur}
             placeholder={step.placeholder}
-            placeholderTextColor={theme.light.textMuted3}
+            placeholderTextColor={colors.textMuted3}
             onSubmitEditing={onSubmitEditing}
             returnKeyType="next"
-            className="h-[58px] rounded-2xl border-0 bg-ft-card px-5 font-body-medium text-lg text-ft-calories outline-none"
+            className="h-[58px] rounded-2xl border-0 bg-ft-card px-5 font-body-medium text-lg text-ft-ink outline-none"
           />
         )}
       />
@@ -54,7 +56,7 @@ export function ProfileFieldInput({
                   key={option.value}
                   onPress={() => field.onChange(option.value)}
                   className={`h-[54px] justify-center rounded-2xl px-5 ${isSelected ? 'bg-ft-calories' : 'bg-ft-card'}`}>
-                  <Text className={`font-body-semibold text-base ${isSelected ? 'text-white' : 'text-ft-calories'}`}>
+                  <Text className={`font-body-semibold text-base ${isSelected ? 'text-white' : 'text-ft-ink'}`}>
                     {option.label}
                   </Text>
                 </Pressable>
@@ -78,11 +80,11 @@ export function ProfileFieldInput({
               value={field.value === null ? '' : String(field.value / step.unitScale)}
               onChangeText={(text) => field.onChange(parseDisplayValue(text, step.unitScale))}
               onBlur={field.onBlur}
-              placeholderTextColor={theme.light.textMuted3}
+              placeholderTextColor={colors.textMuted3}
               keyboardType="numeric"
               onSubmitEditing={onSubmitEditing}
               returnKeyType="next"
-              className="flex-1 border-0 font-body-medium text-lg text-ft-calories outline-none"
+              className="flex-1 border-0 font-body-medium text-lg text-ft-ink outline-none"
             />
             <Text className="font-body-semibold text-sm text-ft-muted-2">{step.unitLabel}</Text>
           </View>

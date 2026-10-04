@@ -3,12 +3,10 @@ import { useColorScheme } from 'nativewind';
 import themeJson from './theme.json';
 
 /**
- * Single source of truth for the app's palette -- also read directly (via require, since it's
- * JSON) by tailwind.config.js, so Tailwind class colors and these raw values never drift apart.
- *
- * `dark` is currently just a copy of `light`: no dark palette has been designed yet. When one
- * is, only this file changes -- every consumer (Tailwind classes and useThemeColors() call
- * sites) picks it up automatically.
+ * Single source of truth for the app's palette. ThemeRoot turns the active scheme's solid colours
+ * into CSS variables that the Tailwind classes read (see tailwind.config.js), while code that
+ * needs a raw colour value (an SVG fill, a placeholder, a gradient stop) reads it from
+ * useThemeColors(). Both come from this one file, so they never drift apart.
  */
 export const theme = themeJson;
 

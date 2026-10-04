@@ -11,7 +11,7 @@ import Animated, {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { signInWithGoogle } from '@/features/auth';
-import { brandStripeColors, theme } from '@/shared/config/theme';
+import { brandStripeColors, useThemeColors } from '@/shared/config/theme';
 import { resolveMotionDuration } from '@/shared/lib/motion';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { GoogleIcon } from '@/shared/ui/icons/GoogleIcon';
@@ -23,6 +23,7 @@ const TitleEnterDelayMs = 240;
 const TitleEnterDurationMs = 320;
 
 export function SignInPage() {
+  const colors = useThemeColors();
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -49,7 +50,7 @@ export function SignInPage() {
         </View>
 
         <Animated.View entering={FadeInDown.delay(TitleEnterDelayMs).duration(TitleEnterDurationMs)} className="gap-2">
-          <Text className="font-display text-6xl uppercase leading-[0.9] text-ft-calories">
+          <Text className="font-display text-6xl uppercase leading-[0.9] text-ft-ink">
             Food{'\n'}Track
           </Text>
           <Text className="max-w-[270px] font-body-medium text-base leading-6 text-ft-muted">
@@ -64,11 +65,11 @@ export function SignInPage() {
           disabled={isSigningIn}
           className="h-[58px] flex-row items-center justify-center gap-3 rounded-2xl bg-ft-card disabled:opacity-60">
           {isSigningIn ? (
-            <ActivityIndicator color={theme.light.calories} />
+            <ActivityIndicator color={colors.ink} />
           ) : (
             <>
               <GoogleIcon />
-              <Text className="font-body-bold text-base text-ft-calories">Continuar com o Google</Text>
+              <Text className="font-body-bold text-base text-ft-ink">Continuar com o Google</Text>
             </>
           )}
         </Pressable>

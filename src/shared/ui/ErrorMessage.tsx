@@ -13,7 +13,7 @@ export function ErrorMessage({ message = DefaultErrorMessage }: { message?: stri
           <View key={color} className="rounded-full" style={{ flex: 1, backgroundColor: color, opacity: DimOpacity }} />
         ))}
       </View>
-      <Text className="text-center font-body-semibold text-sm text-ft-carbs">{message}</Text>
+      <Text className="text-center font-body-semibold text-sm text-ft-carbs-ink">{message}</Text>
     </View>
   );
 }

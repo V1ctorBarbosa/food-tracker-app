@@ -65,16 +65,16 @@ function EditProfileForm({ profile }: { profile: UserProfile }) {
     <SafeAreaView className="flex-1 bg-ft-bg">
       <KeyboardAvoidingView className="flex-1" behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerClassName="gap-6 px-7 pt-4 pb-8" showsVerticalScrollIndicator={false}>
-          <Text className="font-display text-4xl uppercase text-ft-calories">Editar perfil</Text>
+          <Text className="font-display text-4xl uppercase text-ft-ink">Editar perfil</Text>
 
           {ProfileFormSteps.map((step) => {
             const validationMessage = getStepValidationMessage(step, errors[step.key] !== undefined);
 
             return (
               <View key={step.key} className="gap-2">
-                <Text className="font-body-bold text-sm text-ft-calories">{step.question}</Text>
+                <Text className="font-body-bold text-sm text-ft-ink">{step.question}</Text>
                 <ProfileFieldInput step={step} control={control} onSubmitEditing={() => {}} />
-                {validationMessage !== null && <Text className="font-body text-xs text-ft-carbs">{validationMessage}</Text>}
+                {validationMessage !== null && <Text className="font-body text-xs text-ft-carbs-ink">{validationMessage}</Text>}
               </View>
             );
           })}

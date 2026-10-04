@@ -84,7 +84,7 @@ export function TodayPage() {
             {DateLabelFormatter.format(today)}
           </Text>
           <View className="flex-row items-center justify-between">
-            <Text className="font-display text-4xl uppercase text-ft-calories">Hoje</Text>
+            <Text className="font-display text-4xl uppercase text-ft-ink">Hoje</Text>
             <Pressable
               onPress={() => router.push('/log')}
               className="h-[38px] w-[38px] items-center justify-center rounded-full bg-ft-calories">
@@ -111,9 +111,9 @@ export function TodayPage() {
         </View>
 
         <View className="flex-row gap-2.5">
-          <MacroCard label="Proteína" value={protein} target={dashboard.dailyProteinTargetGrams} colorClassName="text-ft-protein" barColorClassName="bg-ft-protein" />
-          <MacroCard label="Carb" value={carbs} target={dashboard.dailyCarbsTargetGrams} colorClassName="text-ft-carbs" barColorClassName="bg-ft-carbs" />
-          <MacroCard label="Gordura" value={fat} target={dashboard.dailyFatTargetGrams} colorClassName="text-ft-fat" barColorClassName="bg-ft-fat" />
+          <MacroCard label="Proteína" value={protein} target={dashboard.dailyProteinTargetGrams} colorClassName="text-ft-protein-ink" barColorClassName="bg-ft-protein" />
+          <MacroCard label="Carb" value={carbs} target={dashboard.dailyCarbsTargetGrams} colorClassName="text-ft-carbs-ink" barColorClassName="bg-ft-carbs" />
+          <MacroCard label="Gordura" value={fat} target={dashboard.dailyFatTargetGrams} colorClassName="text-ft-fat-ink" barColorClassName="bg-ft-fat" />
         </View>
 
         <PressableScale onPress={() => router.push('/log-water')} className="gap-3 rounded-[20px] bg-ft-water p-4">
@@ -141,7 +141,7 @@ export function TodayPage() {
               <AnimatedNumber
                 value={dashboard.currentWeightKilograms}
                 format={formatWeight}
-                className="font-display text-3xl text-ft-weight"
+                className="font-display text-3xl text-ft-weight-ink"
               />
               <Text className="font-body-semibold text-xs text-ft-muted-2">kg</Text>
               {weightDeltaLabel !== null && (
@@ -153,7 +153,7 @@ export function TodayPage() {
 
           <View className="flex-1 gap-2 rounded-[18px] bg-ft-card px-4 py-3.5">
             <Text className="font-body-bold text-[10px] uppercase tracking-widest text-ft-muted-2">Refeições</Text>
-            <Text className="font-display text-3xl text-ft-calories">
+            <Text className="font-display text-3xl text-ft-ink">
               <AnimatedNumber value={countDistinctMealTypes(loggedMealTypes)} format={formatWholeNumber} />
               <Text className="font-body text-base text-ft-muted-3"> / 4</Text>
             </Text>
@@ -169,7 +169,7 @@ export function TodayPage() {
                 key={meal.id}
                 onPress={() => router.push({ pathname: '/meal/[id]', params: { id: meal.id } })}
                 className="flex-row items-center justify-between rounded-[18px] bg-ft-card px-4 py-3">
-                <Text className="font-body-semibold text-sm text-ft-calories">{getMealTypeLabel(meal.mealType)}</Text>
+                <Text className="font-body-semibold text-sm text-ft-ink">{getMealTypeLabel(meal.mealType)}</Text>
                 <Text className="font-body-semibold text-sm text-ft-muted-2">{meal.totalCalories} kcal</Text>
               </PressableScale>
             ))}

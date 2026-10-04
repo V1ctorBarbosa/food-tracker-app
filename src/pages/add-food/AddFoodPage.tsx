@@ -15,7 +15,7 @@ import {
 } from '@/entities/meal';
 import { parseCustomFoodFields } from '@/pages/add-food/model/custom-food-form';
 import { calculateNutritionForQuantity, type NutritionPreview } from '@/pages/add-food/model/nutrition-preview';
-import { theme } from '@/shared/config/theme';
+import { useThemeColors } from '@/shared/config/theme';
 import { parseDecimalInput } from '@/shared/lib/parse-decimal';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { LoadingBar } from '@/shared/ui/LoadingBar';
@@ -25,6 +25,7 @@ const MinimumQuantityGrams = 1;
 
 export function AddFoodPage() {
   const router = useRouter();
+  const colors = useThemeColors();
   const { mealType, mealId } = useLocalSearchParams<{ mealType: MealType; mealId?: string }>();
   const [searchText, setSearchText] = useState('');
   const [selectedFood, setSelectedFood] = useState<Food | null>(null);
@@ -156,19 +157,19 @@ export function AddFoodPage() {
       </View>
 
       <ScrollView className="flex-1" contentContainerClassName="gap-4 px-7 pt-4 pb-8" showsVerticalScrollIndicator={false}>
-        <Text className="font-display text-4xl uppercase text-ft-calories">Adicionar alimento</Text>
+        <Text className="font-display text-4xl uppercase text-ft-ink">Adicionar alimento</Text>
 
         <TextInput
           autoFocus
           value={searchText}
           onChangeText={handleChangeSearchText}
           placeholder="Buscar alimentos..."
-          placeholderTextColor={theme.light.textMuted3}
-          className="h-[54px] rounded-2xl border-0 bg-ft-card px-5 font-body-medium text-base text-ft-calories outline-none"
+          placeholderTextColor={colors.textMuted3}
+          className="h-[54px] rounded-2xl border-0 bg-ft-card px-5 font-body-medium text-base text-ft-ink outline-none"
         />
 
         <Pressable onPress={() => setIsCustomFoodFormVisible((previous) => !previous)} hitSlop={8}>
-          <Text className="font-body-semibold text-sm text-ft-calories">
+          <Text className="font-body-semibold text-sm text-ft-ink">
             {isCustomFoodFormVisible ? 'Cancelar alimento personalizado' : 'Adicionar alimento personalizado'}
           </Text>
         </Pressable>
@@ -180,8 +181,8 @@ export function AddFoodPage() {
               value={customFoodName}
               onChangeText={setCustomFoodName}
               placeholder="Nome"
-              placeholderTextColor={theme.light.textMuted3}
-              className="h-[50px] rounded-xl border-0 bg-ft-bg px-4 font-body-medium text-base text-ft-calories outline-none"
+              placeholderTextColor={colors.textMuted3}
+              className="h-[50px] rounded-xl border-0 bg-ft-bg px-4 font-body-medium text-base text-ft-ink outline-none"
             />
             <View className="flex-row gap-2.5">
               <CustomFoodField label="Kcal" value={customFoodCalories} onChangeText={setCustomFoodCalories} />
@@ -269,10 +270,10 @@ function NutritionPreviewChips({ preview }: { preview: NutritionPreview }) {
 
   return (
     <View className="flex-row gap-2">
-      <MacroPreviewChip label="Kcal" value={caloriesLabel} className="bg-ft-card" textClassName="text-ft-calories" />
+      <MacroPreviewChip label="Kcal" value={caloriesLabel} className="bg-ft-card" textClassName="text-ft-ink" />
       <MacroPreviewChip label="Prot" value={proteinLabel} className="bg-ft-protein" textClassName="text-white" />
       <MacroPreviewChip label="Carb" value={carbsLabel} className="bg-ft-carbs" textClassName="text-white" />
-      <MacroPreviewChip label="Gord" value={fatLabel} className="bg-ft-fat" textClassName="text-ft-calories" />
+      <MacroPreviewChip label="Gord" value={fatLabel} className="bg-ft-fat" textClassName="text-ft-ink" />
     </View>
   );
 }
@@ -305,6 +306,8 @@ function CustomFoodField({
   value: string;
   onChangeText: (text: string) => void;
 }) {
+  const colors = useThemeColors();
+
   return (
     <View className="flex-1 gap-1.5">
       <Text className="font-body-semibold text-[10px] uppercase tracking-widest text-ft-muted-2">{label}</Text>
@@ -313,8 +316,8 @@ function CustomFoodField({
         onChangeText={onChangeText}
         keyboardType="numeric"
         placeholder="0"
-        placeholderTextColor={theme.light.textMuted3}
-        className="h-[46px] rounded-xl border-0 bg-ft-bg px-3 text-center font-body-medium text-base text-ft-calories outline-none"
+        placeholderTextColor={colors.textMuted3}
+        className="h-[46px] rounded-xl border-0 bg-ft-bg px-3 text-center font-body-medium text-base text-ft-ink outline-none"
       />
     </View>
   );
@@ -364,7 +367,7 @@ function FoodSearchResults({
             className={`flex-row items-center justify-between rounded-2xl px-4 py-3 ${isSelected ? 'bg-ft-calories' : 'bg-ft-card'}`}>
             <View className="flex-1 gap-0.5">
               <View className="flex-row items-center gap-1.5">
-                <Text className={`flex-shrink font-body-semibold text-sm ${isSelected ? 'text-white' : 'text-ft-calories'}`}>
+                <Text className={`flex-shrink font-body-semibold text-sm ${isSelected ? 'text-white' : 'text-ft-ink'}`}>
                   {food.name}
                 </Text>
                 <View className={`rounded px-1.5 py-0.5 ${isSelected ? 'bg-ft-calories-dark' : 'bg-ft-bg'}`}>

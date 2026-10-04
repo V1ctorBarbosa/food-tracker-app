@@ -51,7 +51,7 @@ export function LogMealTypePage() {
       <View className="flex-1 justify-center gap-8 px-7">
         <View className="gap-2">
           <Text className="font-body-bold text-xs uppercase tracking-widest text-ft-muted">Registrar refeição</Text>
-          <Text className="font-display text-4xl uppercase leading-tight text-ft-calories">O que você vai registrar?</Text>
+          <Text className="font-display text-4xl uppercase leading-tight text-ft-ink">O que você vai registrar?</Text>
         </View>
 
         <View className="gap-3">
@@ -62,7 +62,7 @@ export function LogMealTypePage() {
                 key={mealType}
                 onPress={() => handlePressMealType(mealType)}
                 className={`h-[58px] flex-row items-center justify-between rounded-2xl px-5 ${isPending ? 'bg-ft-calories' : 'bg-ft-card'}`}>
-                <Text className={`font-body-bold text-lg ${isPending ? 'text-white' : 'text-ft-calories'}`}>{getMealTypeLabel(mealType)}</Text>
+                <Text className={`font-body-bold text-lg ${isPending ? 'text-white' : 'text-ft-ink'}`}>{getMealTypeLabel(mealType)}</Text>
                 {isPending && <Text className="font-body-semibold text-xs uppercase tracking-widest text-blue-200">Pendente</Text>}
               </PressableScale>
             );
