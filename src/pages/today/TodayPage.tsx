@@ -5,6 +5,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDashboardQuery } from '@/entities/dashboard';
 import { getMealTypeLabel, useDayMealsQuery } from '@/entities/meal';
 import { formatDayTitle, formatLongDate, formatMealsHeading, useSelectedDay } from '@/entities/selected-day';
+import { ThemeToggleButton } from '@/features/theme';
+import { resolveDayTitleSizeClassName } from '@/pages/today/model/day-header';
 import {
   calculateProgressPercent,
   calculateWeightDelta,
@@ -68,6 +70,7 @@ export function TodayPage() {
   const calorieTargetLabel = dashboard.dailyCalorieTarget.toLocaleString('pt-BR');
   const longDateLabel = formatLongDate(day);
   const dayTitle = formatDayTitle(daysBack);
+  const dayTitleSizeClassName = resolveDayTitleSizeClassName(daysBack);
   const mealsHeading = formatMealsHeading(daysBack);
 
   const loggedMealTypes = dayMeals.map((meal) => meal.mealType);
@@ -85,13 +88,28 @@ export function TodayPage() {
           <Text className="font-body-bold text-xs uppercase tracking-widest text-ft-muted">
             {longDateLabel}
           </Text>
-          <View className="flex-row items-center justify-between">
-            <Text className="font-display text-4xl uppercase text-ft-ink">{dayTitle}</Text>
+          <View className="flex-row items-center justify-between gap-3">
             <Pressable
-              onPress={() => router.push('/log')}
-              className="h-[38px] w-[38px] items-center justify-center rounded-full bg-ft-calories">
-              <PlusIcon />
+              onPress={() => router.push('/day-picker')}
+              accessibilityRole="button"
+              accessibilityLabel="Escolher dia"
+              hitSlop={8}
+              className="min-w-0 flex-shrink flex-row items-center gap-2">
+              <Text numberOfLines={1} className={`font-display uppercase text-ft-ink ${dayTitleSizeClassName}`}>
+                {dayTitle}
+              </Text>
+              <ChevronDownIcon />
             </Pressable>
+            <View className="flex-row gap-2">
+              <ThemeToggleButton />
+              <Pressable
+                onPress={() => router.push('/log')}
+                accessibilityRole="button"
+                accessibilityLabel="Registrar refeição"
+                className="h-[38px] w-[38px] items-center justify-center rounded-full bg-ft-calories">
+                <PlusIcon />
+              </Pressable>
+            </View>
           </View>
         </View>
 
@@ -192,6 +210,15 @@ function CaloriesRemainingLabel({ calories, calorieTarget }: { calories: number;
   const label = formatCaloriesRemaining(calorieTarget - displayedCalories);
 
   return <Text className="font-body-semibold text-xs text-blue-200">{label}</Text>;
+}
+
+function ChevronDownIcon() {
+  return (
+    <View
+      className="h-[9px] w-[9px] border-b-[2.5px] border-r-[2.5px] border-ft-ink"
+      style={{ transform: [{ translateY: -3 }, { rotate: '45deg' }] }}
+    />
+  );
 }
 
 function PlusIcon() {
