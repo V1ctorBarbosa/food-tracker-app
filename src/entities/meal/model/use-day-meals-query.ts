@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
-import type { Meal } from '@/entities/meal/model/meal.types';
+import type { MealSummary } from '@/entities/meal/model/meal.types';
 import { useSession } from '@/entities/session';
 import { getJson } from '@/shared/api/http-client';
 import { buildDayRangeQuery } from '@/shared/lib/day-range-query';
@@ -11,7 +11,7 @@ export function useDayMealsQuery(day: string) {
 
   return useQuery({
     queryKey: ['meals', day, day],
-    queryFn: () => getJson<Meal[]>(`/meals?${buildDayRangeQuery(day, day)}`),
+    queryFn: () => getJson<MealSummary[]>(`/meals?${buildDayRangeQuery(day, day)}`),
     enabled: isSignedIn,
   });
 }

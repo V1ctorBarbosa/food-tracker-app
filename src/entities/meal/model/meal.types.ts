@@ -24,6 +24,9 @@ export type Meal = {
   items: MealItem[];
 };
 
+/** A meal as listed for a day: its totals, without the items (those come from the single-meal endpoint). */
+export type MealSummary = Omit<Meal, 'items'>;
+
 export type MealItemRequest = {
   foodId: string;
   quantity: number | null;
