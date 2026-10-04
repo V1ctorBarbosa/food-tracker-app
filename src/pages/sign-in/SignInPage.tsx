@@ -53,7 +53,7 @@ export function SignInPage() {
             Food{'\n'}Track
           </Text>
           <Text className="max-w-[270px] font-body-medium text-base leading-6 text-ft-muted">
-            Registre o que você come e bebe. Veja a linha se mover.
+            Pra você ver o que você tá comendo e bebendo por dia, tudo direitinho
           </Text>
         </Animated.View>
       </View>
@@ -72,10 +72,6 @@ export function SignInPage() {
             </>
           )}
         </Pressable>
-
-        <Text className="text-center font-body text-xs leading-5 text-ft-muted-2">
-          Por enquanto, o Google é a única forma de entrar.{'\n'}Email e Apple chegam em breve.
-        </Text>
 
         {errorMessage !== null && <ErrorMessage message={errorMessage} />}
       </View>
