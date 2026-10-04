@@ -19,6 +19,7 @@ import { useSession } from '@/entities/session';
 import { useThemeBootstrap } from '@/features/theme';
 import { queryClient } from '@/shared/api/query-client';
 import { useRefetchOnAppFocus } from '@/shared/api/use-refetch-on-app-focus';
+import { useWarmUpApi } from '@/shared/api/warm-up-api';
 import { theme } from '@/shared/config/theme';
 import { withAppPalette } from '@/shared/lib/navigation-theme';
 import { ThemeRoot } from '@/shared/ui/ThemeRoot';
@@ -42,6 +43,7 @@ export default function RootLayout() {
     ArchivoBlack_400Regular,
   });
   useRefetchOnAppFocus();
+  useWarmUpApi();
 
   const isReady = fontsLoaded && isThemeReady && session.status !== 'loading';
 
