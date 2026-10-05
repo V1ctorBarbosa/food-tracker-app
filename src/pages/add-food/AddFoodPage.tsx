@@ -14,10 +14,12 @@ import {
   type MealType,
 } from '@/entities/meal';
 import { buildLoggedAt, useSelectedDay } from '@/entities/selected-day';
+import { resolveAddFoodBackLabel } from '@/pages/add-food/model/add-food-back-label';
 import { parseCustomFoodFields } from '@/pages/add-food/model/custom-food-form';
 import { calculateNutritionForQuantity, type NutritionPreview } from '@/pages/add-food/model/nutrition-preview';
 import { useThemeColors } from '@/shared/config/theme';
 import { parseDecimalInput } from '@/shared/lib/parse-decimal';
+import { BackPill } from '@/shared/ui/BackPill';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { LoadingBar } from '@/shared/ui/LoadingBar';
 
@@ -152,13 +154,12 @@ export function AddFoodPage() {
   }
 
   const preview = selectedFood !== null ? calculateNutritionForQuantity(selectedFood, quantityGrams) : null;
+  const backLabel = resolveAddFoodBackLabel(isAppendMode);
 
   return (
     <SafeAreaView className="flex-1 bg-ft-bg">
       <View className="flex-row items-center justify-between px-7 pt-4">
-        <Pressable onPress={() => router.back()} hitSlop={12}>
-          <Text className="font-body-semibold text-sm text-ft-muted">Cancelar</Text>
-        </Pressable>
+        <BackPill label={backLabel} onPress={() => router.back()} />
         <Text className="font-body-bold text-xs uppercase tracking-widest text-ft-muted">{getMealTypeLabel(mealType)}</Text>
       </View>
 
