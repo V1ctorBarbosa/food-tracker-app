@@ -1,5 +1,5 @@
 import type { DateRange } from '@/pages/charts/model/date-range';
-import { formatDateOnly } from '@/shared/lib/date';
+import { daysBetween, formatDateOnly } from '@/shared/lib/date';
 
 export type CalendarCell = { date: string } | null;
 
@@ -93,8 +93,31 @@ export function shiftMonth(year: number, monthIndex: number, monthDelta: number)
   return { year: shiftedDate.getFullYear(), monthIndex: shiftedDate.getMonth() };
 }
 
-export function isDateSelectable(date: string, maxSelectableDate: string): boolean {
-  return date <= maxSelectableDate;
+/** Mirrors the API's limit on a history query: a range spans at most this many days, both ends included. */
+export const MaximumCustomRangeDayCount = 366;
+
+/**
+ * Whether tapping `date` is allowed: never after `maxSelectableDate`, and while a range is half
+ * picked, never so far from its first day that the finished range would exceed
+ * {@link MaximumCustomRangeDayCount}.
+ */
+export function isDateSelectable(date: string, maxSelectableDate: string, selection: DateRange | null): boolean {
+  if (date > maxSelectableDate) {
+    return false;
+  }
+
+  const isRangeHalfPicked = selection !== null && selection.from === selection.to;
+  if (!isRangeHalfPicked) {
+    return true;
+  }
+
+  return isWithinMaximumRangeOf(date, selection.from);
+}
+
+function isWithinMaximumRangeOf(date: string, firstPickedDate: string): boolean {
+  const spannedDayCount = Math.abs(daysBetween(firstPickedDate, date)) + 1;
+
+  return spannedDayCount <= MaximumCustomRangeDayCount;
 }
 
 /** Whether the given month is the one `referenceDate` falls in, or a later one -- there is nothing selectable beyond it. */
