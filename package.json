@@ -55,6 +55,7 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
+    "web:deploy": "expo export --platform web && npx firebase-tools deploy --only hosting",
     "lint": "expo lint",
     "test": "jest --watchAll"
   },
