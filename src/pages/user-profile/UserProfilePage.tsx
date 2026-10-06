@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useProfileQuery } from '@/entities/profile';
 import { signOutOfSession } from '@/features/auth';
+import { DeleteAccountSection } from '@/features/delete-account';
 import { useNightMode } from '@/features/theme';
 import { buildBodyStatRows, buildTargetRows, type ProfileStatRow } from '@/pages/user-profile/model/profile-view';
 import type { AuthUser } from '@/shared/api/auth-gateway';
@@ -96,6 +97,8 @@ export function UserProfilePage({ user }: { user: AuthUser }) {
             <Text className="font-body-bold text-sm uppercase tracking-widest text-ft-carbs-ink">Sair</Text>
           )}
         </Pressable>
+
+        <DeleteAccountSection />
       </ScrollView>
     </SafeAreaView>
   );
