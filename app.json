@@ -14,6 +14,7 @@
     },
     "android": {
       "package": "com.v1ctorbarbosa.foodtracker",
+      "allowBackup": false,
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "backgroundColor": "#274F8C",
