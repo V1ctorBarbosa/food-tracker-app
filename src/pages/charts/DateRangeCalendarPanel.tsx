@@ -78,7 +78,7 @@ export function DateRangeCalendarPanel({
   }
 
   function handleSelectDate(date: string) {
-    if (!isDateSelectable(date, maxSelectableDate)) {
+    if (!isDateSelectable(date, maxSelectableDate, selection)) {
       return;
     }
 
@@ -177,7 +177,7 @@ function CalendarDayCell({
     return <View className="h-8 w-8" />;
   }
 
-  const isSelectable = isDateSelectable(cell.date, maxSelectableDate);
+  const isSelectable = isDateSelectable(cell.date, maxSelectableDate, selection);
   const state = getCalendarCellState(cell.date, selection);
   const dayNumberLabel = String(Number(cell.date.slice(-2)));
   const backgroundClassName = CalendarCellBackgroundClassNames[state];

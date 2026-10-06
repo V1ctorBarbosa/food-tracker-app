@@ -6,6 +6,7 @@ import {
   groupIntoWeeks,
   isCurrentOrFutureMonth,
   isDateSelectable,
+  MaximumCustomRangeDayCount,
   shiftMonth,
 } from './calendar-grid';
 
@@ -102,12 +103,41 @@ describe('formatMonthLabel', () => {
 
 describe('isDateSelectable', () => {
   test('allows a date on or before the maximum', () => {
-    expect(isDateSelectable('2026-09-07', '2026-09-07')).toBe(true);
-    expect(isDateSelectable('2026-09-06', '2026-09-07')).toBe(true);
+    expect(isDateSelectable('2026-09-07', '2026-09-07', null)).toBe(true);
+    expect(isDateSelectable('2026-09-06', '2026-09-07', null)).toBe(true);
   });
 
   test('rejects a date after the maximum', () => {
-    expect(isDateSelectable('2026-09-08', '2026-09-07')).toBe(false);
+    expect(isDateSelectable('2026-09-08', '2026-09-07', null)).toBe(false);
+  });
+
+  test('allows any past date when no range is half picked', () => {
+    const completeRange = { from: '2026-09-01', to: '2026-09-10' };
+
+    expect(isDateSelectable('2020-01-01', '2026-10-06', null)).toBe(true);
+    expect(isDateSelectable('2020-01-01', '2026-10-06', completeRange)).toBe(true);
+  });
+
+  test('allows completing a range of exactly the maximum day count, in either direction', () => {
+    const halfPicked = { from: '2025-10-06', to: '2025-10-06' };
+
+    // 2025-10-06..2026-10-06 is 366 days with both ends included.
+    expect(MaximumCustomRangeDayCount).toBe(366);
+    expect(isDateSelectable('2026-10-06', '2026-10-06', halfPicked)).toBe(true);
+    expect(isDateSelectable('2024-10-06', '2026-10-06', halfPicked)).toBe(true);
+  });
+
+  test('rejects a date that would make the half-picked range longer than the maximum', () => {
+    const halfPicked = { from: '2025-10-06', to: '2025-10-06' };
+
+    expect(isDateSelectable('2024-10-05', '2026-10-06', halfPicked)).toBe(false);
+  });
+
+  test('rejects a date a full year and a day after the first pick', () => {
+    const halfPicked = { from: '2025-01-01', to: '2025-01-01' };
+
+    expect(isDateSelectable('2026-01-01', '2026-10-06', halfPicked)).toBe(true);
+    expect(isDateSelectable('2026-01-02', '2026-10-06', halfPicked)).toBe(false);
   });
 });
 
