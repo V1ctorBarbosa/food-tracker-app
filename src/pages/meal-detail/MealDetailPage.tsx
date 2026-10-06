@@ -12,12 +12,22 @@ import {
   type MealItem,
   type MealItemRequest,
 } from '@/entities/meal';
+import {
+  calculateMacroSharePercents,
+  formatItemCalories,
+  formatItemCountLabel,
+  formatMealItemMacros,
+} from '@/pages/meal-detail/model/meal-item-view';
 import { formatWholeNumber } from '@/shared/lib/format';
 import { AnimatedNumber } from '@/shared/ui/AnimatedNumber';
+import { BackPill } from '@/shared/ui/BackPill';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { LoadingBar } from '@/shared/ui/LoadingBar';
 import { ProgressBarFill } from '@/shared/ui/ProgressBar';
 import { SwipeToDeleteRow } from '@/shared/ui/SwipeToDeleteRow';
+
+const HomeBackLabel = 'Hoje';
+const HomeHref = '/today';
 
 const DateTimeLabelFormatter = new Intl.DateTimeFormat('pt-BR', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
 
@@ -32,9 +42,16 @@ export function MealDetailPage() {
   const itemFoodIds = mealQuery.data?.items.map((item) => item.foodId) ?? [];
   const foodsQuery = useFoodsByIdsQuery(itemFoodIds);
 
+  function handlePressBack() {
+    router.dismissTo(HomeHref);
+  }
+
   if (wasMealDeleted) {
     return (
       <SafeAreaView className="flex-1 bg-ft-bg">
+        <View className="flex-row px-7 pt-4">
+          <BackPill label={HomeBackLabel} onPress={handlePressBack} />
+        </View>
         <View className="flex-1 items-center justify-center px-7">
           <Text className="text-center font-body-semibold text-sm text-ft-muted-2">Refeição excluída.</Text>
         </View>
@@ -52,13 +69,28 @@ export function MealDetailPage() {
 
   if (mealQuery.isError) {
     return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-ft-bg px-7">
-        <ErrorMessage />
+      <SafeAreaView className="flex-1 bg-ft-bg">
+        <View className="flex-row px-7 pt-4">
+          <BackPill label={HomeBackLabel} onPress={handlePressBack} />
+        </View>
+        <View className="flex-1 items-center justify-center px-7">
+          <ErrorMessage />
+        </View>
       </SafeAreaView>
     );
   }
 
   const meal = mealQuery.data;
+  const itemCountLabel = formatItemCountLabel(meal.items.length);
+
+  let editButtonLabel = 'Editar';
+  let editButtonClassName = 'bg-white';
+  let editButtonTextClassName = 'text-ft-carbs-ink';
+  if (isEditingItems) {
+    editButtonLabel = 'Concluído';
+    editButtonClassName = 'bg-ft-card';
+    editButtonTextClassName = 'text-ft-ink';
+  }
 
   async function handleRemoveItem(itemToRemove: MealItem) {
     const remainingItems: MealItemRequest[] = meal.items
@@ -76,14 +108,13 @@ export function MealDetailPage() {
 
   return (
     <SafeAreaView className="flex-1 bg-ft-bg">
-      <View className="flex-row items-center justify-end px-7 pt-4">
+      <View className="flex-row items-center justify-between px-7 pt-4">
+        <BackPill label={HomeBackLabel} onPress={handlePressBack} />
         <Pressable
           onPress={() => setIsEditingItems((previous) => !previous)}
           hitSlop={12}
-          className={`rounded-full px-4 py-1.5 ${isEditingItems ? 'bg-ft-card' : 'bg-white'}`}>
-          <Text className={`font-body-bold text-sm ${isEditingItems ? 'text-ft-ink' : 'text-ft-carbs-ink'}`}>
-            {isEditingItems ? 'Concluído' : 'Editar'}
-          </Text>
+          className={`rounded-full px-4 py-1.5 ${editButtonClassName}`}>
+          <Text className={`font-body-bold text-sm ${editButtonTextClassName}`}>{editButtonLabel}</Text>
         </Pressable>
       </View>
 
@@ -101,9 +132,7 @@ export function MealDetailPage() {
         <MacroBar protein={meal.totalProtein} carbs={meal.totalCarbs} fat={meal.totalFat} />
 
         <View className="flex-row items-center justify-between">
-          <Text className="font-body-bold text-[10px] uppercase tracking-widest text-ft-muted-2">
-            {meal.items.length} {meal.items.length === 1 ? 'item' : 'itens'}
-          </Text>
+          <Text className="font-body-bold text-[10px] uppercase tracking-widest text-ft-muted-2">{itemCountLabel}</Text>
           {isEditingItems && (
             <Text className="font-body-semibold text-[10px] text-ft-ink">Deslize para a esquerda para apagar</Text>
           )}
@@ -140,10 +169,7 @@ export function MealDetailPage() {
 }
 
 function MacroBar({ protein, carbs, fat }: { protein: number; carbs: number; fat: number }) {
-  const total = protein + carbs + fat;
-  const proteinPercent = total > 0 ? (protein / total) * 100 : 0;
-  const carbsPercent = total > 0 ? (carbs / total) * 100 : 0;
-  const fatPercent = total > 0 ? (fat / total) * 100 : 0;
+  const { proteinPercent, carbsPercent, fatPercent } = calculateMacroSharePercents(protein, carbs, fat);
 
   return (
     <View className="gap-2">
@@ -168,8 +194,14 @@ function MacroBar({ protein, carbs, fat }: { protein: number; carbs: number; fat
 }
 
 function MealItemRow({ item, foodName }: { item: MealItem; foodName: string }) {
-  const unitLabel = getMeasurementUnitLabel(item.unit);
-  const macroSummaryLabel = `${item.quantity} ${unitLabel} · ${Math.round(item.protein)}P / ${Math.round(item.carbs)}C / ${Math.round(item.fat)}G`;
+  const macroSummaryLabel = formatMealItemMacros({
+    quantity: item.quantity,
+    unitLabel: getMeasurementUnitLabel(item.unit),
+    protein: item.protein,
+    carbs: item.carbs,
+    fat: item.fat,
+  });
+  const caloriesLabel = formatItemCalories(item.calories);
 
   return (
     <View className="flex-row items-center justify-between rounded-2xl bg-ft-card px-4 py-3">
@@ -177,7 +209,7 @@ function MealItemRow({ item, foodName }: { item: MealItem; foodName: string }) {
         <Text className="font-body-semibold text-sm text-ft-ink">{foodName}</Text>
         <Text className="font-body text-xs text-ft-muted-2">{macroSummaryLabel}</Text>
       </View>
-      <Text className="font-body-bold text-sm text-ft-ink">{item.calories}</Text>
+      <Text className="ml-3 font-body-bold text-sm text-ft-ink">{caloriesLabel}</Text>
     </View>
   );
 }
