@@ -18,8 +18,8 @@ const SpinnerOnCarbsColor = theme.light.card;
  * Account deletion behind an explicit second step. An inline panel instead of a native alert,
  * because React Native's Alert does not show buttons on web.
  */
-export function DeleteAccountSection() {
-  const deleteAccountMutation = useDeleteAccountMutation();
+export function DeleteAccountSection({ onDeleted }: { onDeleted?: () => void }) {
+  const deleteAccountMutation = useDeleteAccountMutation({ onDeleted });
   const [isConfirming, setIsConfirming] = useState(false);
 
   function handlePressCancel() {

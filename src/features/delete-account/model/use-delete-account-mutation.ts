@@ -5,7 +5,12 @@ import { deleteRequest } from '@/shared/api/http-client';
 
 import { deleteAccount } from './delete-account';
 
-export function useDeleteAccountMutation() {
+/**
+ * `onDeleted` is passed to the mutation itself rather than to `mutate`, because signing out at the
+ * end of the deletion can unmount the component that started it, and `mutate` callbacks are
+ * dropped for an unmounted caller.
+ */
+export function useDeleteAccountMutation({ onDeleted }: { onDeleted?: () => void } = {}) {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -15,5 +20,6 @@ export function useDeleteAccountMutation() {
         clearCachedData: () => queryClient.clear(),
         signOut: () => authGateway.signOut(),
       }),
+    onSuccess: onDeleted,
   });
 }
