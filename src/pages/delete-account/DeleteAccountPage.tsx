@@ -52,6 +52,11 @@ export function DeleteAccountPage({ session }: { session: SessionState }) {
           ))}
         </View>
 
+        <Text className="font-body-medium text-xs leading-5 text-ft-muted-2">
+          Registros técnicos de erro do servidor podem conter o identificador da sua conta. Eles são apagados
+          automaticamente em até 30 dias.
+        </Text>
+
         <Animated.View key={view} entering={FadeIn.duration(MotionDurationMs.listEnter)} exiting={FadeOut.duration(MotionDurationMs.listExit)}>
           {viewContent}
         </Animated.View>
