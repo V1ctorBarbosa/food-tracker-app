@@ -141,7 +141,9 @@ export function AddFoodPage() {
         id: mealId,
         request: { mealType: existingMealQuery.data.mealType, items: [...existingItems, newItem] },
       });
-      router.replace({ pathname: '/meal/[id]', params: { id: mealId } });
+      // The meal's detail screen is already open underneath: going back reuses it (its query was
+      // just invalidated) instead of stacking another copy of it for every item added.
+      router.back();
       return;
     }
 
