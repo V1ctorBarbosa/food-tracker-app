@@ -4,7 +4,7 @@ import { ActivityIndicator, Keyboard, KeyboardAvoidingView, Pressable, ScrollVie
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { Food } from '@/entities/food';
-import { getFoodSourceLabel, getMeasurementUnitLabel, useCreateCustomFoodMutation, useFoodSearchQuery } from '@/entities/food';
+import { useCreateCustomFoodMutation, useFoodSearchQuery } from '@/entities/food';
 import {
   getMealTypeLabel,
   useCreateMealMutation,
@@ -17,6 +17,8 @@ import { buildLoggedAt, useSelectedDay } from '@/entities/selected-day';
 import { resolveAddFoodBackLabel } from '@/pages/add-food/model/add-food-back-label';
 import { parseCustomFoodFields } from '@/pages/add-food/model/custom-food-form';
 import { calculateNutritionForQuantity, type NutritionPreview } from '@/pages/add-food/model/nutrition-preview';
+import { isSelectedFoodMissingFromResults } from '@/pages/add-food/model/selected-food-row';
+import { FoodRow } from '@/pages/add-food/ui/FoodRow';
 import { QuantityPanel } from '@/pages/add-food/ui/QuantityPanel';
 import { useThemeColors } from '@/shared/config/theme';
 import { parseDecimalInput } from '@/shared/lib/parse-decimal';
@@ -162,7 +164,9 @@ export function AddFoodPage() {
     preview = calculateNutritionForQuantity(selectedFood, quantityGrams);
   }
 
-  let customFoodToggleLabel = 'Adicionar alimento personalizado';
+  const showSelectedFoodRow = isSelectedFoodMissingFromResults(selectedFood, foodSearchQuery.data);
+
+  let customFoodToggleLabel ='Adicionar alimento personalizado';
   if (isCustomFoodFormVisible) {
     customFoodToggleLabel = 'Cancelar alimento personalizado';
   }
@@ -223,6 +227,13 @@ export function AddFoodPage() {
                 {createCustomFoodMutation.isPending && <ActivityIndicator color="white" />}
                 {!createCustomFoodMutation.isPending && <Text className="font-body-bold text-sm text-white">Salvar</Text>}
               </Pressable>
+            </View>
+          )}
+
+          {selectedFood !== null && showSelectedFoodRow && (
+            <View className="gap-2">
+              <Text className="font-body-bold text-[10px] uppercase tracking-widest text-ft-muted-2">Alimento selecionado</Text>
+              <FoodRow food={selectedFood} isSelected onPress={handleSelectFood} />
             </View>
           )}
 
@@ -321,34 +332,9 @@ function FoodSearchResults({
   return (
     <View className="gap-2">
       <Text className="font-body-bold text-[10px] uppercase tracking-widest text-ft-muted-2">{query.data.length} resultados</Text>
-      {query.data.map((food) => {
-        const isSelected = food.id === selectedFoodId;
-        const baseUnitLabel = getMeasurementUnitLabel(food.baseUnitType);
-        return (
-          <Pressable
-            key={food.id}
-            onPress={() => onSelectFood(food)}
-            className={`flex-row items-center justify-between rounded-2xl px-4 py-3 ${isSelected ? 'bg-ft-calories' : 'bg-ft-card'}`}>
-            <View className="flex-1 gap-0.5">
-              <View className="flex-row items-center gap-1.5">
-                <Text className={`flex-shrink font-body-semibold text-sm ${isSelected ? 'text-white' : 'text-ft-ink'}`}>
-                  {food.name}
-                </Text>
-                <View className={`rounded px-1.5 py-0.5 ${isSelected ? 'bg-ft-calories-dark' : 'bg-ft-bg'}`}>
-                  <Text className={`font-body-bold text-[8px] uppercase tracking-wide ${isSelected ? 'text-blue-200' : 'text-ft-muted-2'}`}>
-                    {getFoodSourceLabel(food.source)}
-                  </Text>
-                </View>
-              </View>
-              <Text className={`font-body text-xs ${isSelected ? 'text-blue-200' : 'text-ft-muted-2'}`}>
-                {food.caloriesPerBaseUnit} kcal · {food.proteinPerBaseUnit}P / {food.carbsPerBaseUnit}C / {food.fatPerBaseUnit}G por{' '}
-                {food.baseUnitQuantity} {baseUnitLabel}
-              </Text>
-            </View>
-            {isSelected && <Text className="font-body-bold text-base text-white">✓</Text>}
-          </Pressable>
-        );
-      })}
+      {query.data.map((food) => (
+        <FoodRow key={food.id} food={food} isSelected={food.id === selectedFoodId} onPress={onSelectFood} />
+      ))}
     </View>
   );
 }
