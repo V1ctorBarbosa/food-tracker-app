@@ -31,3 +31,6 @@ export type CreateCustomFoodRequest = {
   carbs: number;
   fat: number;
 };
+
+/** The same fields as creating one: editing replaces the name and the per-100g nutrition. */
+export type UpdateCustomFoodRequest = CreateCustomFoodRequest;
