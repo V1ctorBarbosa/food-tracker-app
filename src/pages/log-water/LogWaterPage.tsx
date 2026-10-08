@@ -12,8 +12,10 @@ import {
 } from '@/entities/water-entry';
 import { buildLoggedAt, formatDayTitle, formatEntriesHeading, useSelectedDay } from '@/entities/selected-day';
 import { calculateProgressPercent, formatLiters } from '@/pages/today/model/dashboard-view';
+import { useThemeColors } from '@/shared/config/theme';
 import { MotionDurationMs } from '@/shared/lib/motion';
 import { parseDecimalInput } from '@/shared/lib/parse-decimal';
+import { useSingleFlight } from '@/shared/lib/use-single-flight';
 import { AnimatedNumber } from '@/shared/ui/AnimatedNumber';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { LoadingBar } from '@/shared/ui/LoadingBar';
@@ -37,6 +39,8 @@ export function LogWaterPage() {
   const dayEntriesQuery = useDayWaterEntriesQuery(day);
   const createWaterEntryMutation = useCreateWaterEntryMutation();
   const deleteWaterEntryMutation = useDeleteWaterEntryMutation();
+  const addWaterFlight = useSingleFlight();
+  const [pendingQuickAddAmount, setPendingQuickAddAmount] = useState<number | null>(null);
 
   if (dashboardQuery.isPending || dayEntriesQuery.isPending) {
     return (
@@ -60,13 +64,32 @@ export function LogWaterPage() {
   const dayEntries = dayEntriesQuery.data;
   const totalMilliliters = dayEntries.reduce((sum, entry) => sum + entry.amountMilliliters, 0);
 
-  async function handleQuickAdd(amountMilliliters: number) {
+  let customAmountToggleLabel = 'Quantidade personalizada';
+  if (isCustomAmountVisible) {
+    customAmountToggleLabel = 'Cancelar quantidade personalizada';
+  }
+
+  async function addWaterEntry(amountMilliliters: number) {
     await createWaterEntryMutation.mutateAsync({ loggedAt: buildLoggedAt(day, new Date()), amountMilliliters });
   }
 
-  async function handleAddCustomAmount() {
-    await createWaterEntryMutation.mutateAsync({ loggedAt: buildLoggedAt(day, new Date()), amountMilliliters: customAmountMilliliters });
-    setIsCustomAmountVisible(false);
+  function handleQuickAdd(amountMilliliters: number) {
+    void addWaterFlight.run(async () => {
+      setPendingQuickAddAmount(amountMilliliters);
+
+      try {
+        await addWaterEntry(amountMilliliters);
+      } finally {
+        setPendingQuickAddAmount(null);
+      }
+    });
+  }
+
+  function handleAddCustomAmount() {
+    void addWaterFlight.run(async () => {
+      await addWaterEntry(customAmountMilliliters);
+      setIsCustomAmountVisible(false);
+    });
   }
 
   function handleAdjustCustomAmount(deltaMilliliters: number) {
@@ -110,6 +133,7 @@ export function LogWaterPage() {
                 key={amountMilliliters}
                 amountMilliliters={amountMilliliters}
                 disabled={createWaterEntryMutation.isPending}
+                isLoading={pendingQuickAddAmount === amountMilliliters}
                 onPress={() => handleQuickAdd(amountMilliliters)}
               />
             ))}
@@ -120,6 +144,7 @@ export function LogWaterPage() {
                 key={amountMilliliters}
                 amountMilliliters={amountMilliliters}
                 disabled={createWaterEntryMutation.isPending}
+                isLoading={pendingQuickAddAmount === amountMilliliters}
                 onPress={() => handleQuickAdd(amountMilliliters)}
               />
             ))}
@@ -127,9 +152,7 @@ export function LogWaterPage() {
         </View>
 
         <Pressable onPress={() => setIsCustomAmountVisible((previous) => !previous)} hitSlop={8}>
-          <Text className="font-body-semibold text-sm text-ft-water-dark">
-            {isCustomAmountVisible ? 'Cancelar quantidade personalizada' : 'Quantidade personalizada'}
-          </Text>
+          <Text className="font-body-semibold text-sm text-ft-water-dark">{customAmountToggleLabel}</Text>
         </Pressable>
 
         {isCustomAmountVisible && (
@@ -162,11 +185,8 @@ export function LogWaterPage() {
               onPress={handleAddCustomAmount}
               disabled={createWaterEntryMutation.isPending}
               className="h-[54px] items-center justify-center rounded-2xl bg-ft-water disabled:opacity-40">
-              {createWaterEntryMutation.isPending ? (
-                <ActivityIndicator color="white" />
-              ) : (
-                <Text className="font-body-bold text-sm text-white">Adicionar</Text>
-              )}
+              {createWaterEntryMutation.isPending && <ActivityIndicator color="white" />}
+              {!createWaterEntryMutation.isPending && <Text className="font-body-bold text-sm text-white">Adicionar</Text>}
             </Pressable>
           </View>
         )}
@@ -194,18 +214,28 @@ export function LogWaterPage() {
 function QuickAddButton({
   amountMilliliters,
   disabled,
+  isLoading,
   onPress,
 }: {
   amountMilliliters: number;
   disabled: boolean;
+  isLoading: boolean;
   onPress: () => void;
 }) {
+  const colors = useThemeColors();
+
   return (
     <Pressable
       onPress={onPress}
       disabled={disabled}
+      accessibilityRole="button"
+      accessibilityLabel={`Adicionar ${amountMilliliters} ml`}
+      accessibilityState={{ busy: isLoading }}
       className="flex-1 items-center justify-center gap-1 rounded-2xl bg-ft-card py-4 disabled:opacity-40">
-      <Text className="font-display text-2xl text-ft-water-dark">{amountMilliliters}</Text>
+      <View className="h-8 items-center justify-center">
+        {isLoading && <ActivityIndicator color={colors.waterDark} />}
+        {!isLoading && <Text className="font-display text-2xl text-ft-water-dark">{amountMilliliters}</Text>}
+      </View>
       <Text className="font-body-semibold text-[10px] uppercase tracking-widest text-ft-muted-2">ml</Text>
     </Pressable>
   );
