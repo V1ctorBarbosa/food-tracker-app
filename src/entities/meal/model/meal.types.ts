@@ -29,10 +29,8 @@ export type MealSummary = Omit<Meal, 'items'>;
 
 export type MealItemRequest = {
   foodId: string;
-  quantity: number | null;
-  unit: MeasurementUnit | null;
-  foodServingId: string | null;
-  servingCount: number | null;
+  quantity: number;
+  unit: MeasurementUnit;
 };
 
 export type CreateMealRequest = {

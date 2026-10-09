@@ -116,8 +116,6 @@ export function AddFoodPage() {
       foodId: selectedFood.id,
       quantity,
       unit: selectedFood.baseUnitType,
-      foodServingId: null,
-      servingCount: null,
     };
 
     if (isAppendMode && mealId !== undefined && existingMealQuery.data !== undefined) {
@@ -125,8 +123,6 @@ export function AddFoodPage() {
         foodId: item.foodId,
         quantity: item.quantity,
         unit: item.unit,
-        foodServingId: null,
-        servingCount: null,
       }));
 
       await updateMealMutation.mutateAsync({
