@@ -76,6 +76,17 @@ export function UserProfilePage({ user }: { user: AuthUser }) {
         <ProfileSection title="Metas diárias" rows={targetRows} />
 
         <View className="gap-2">
+          <Text className="font-body-bold text-[10px] uppercase tracking-widest text-ft-muted-2">Alimentos</Text>
+          <Pressable
+            onPress={() => router.push('/custom-foods')}
+            accessibilityRole="button"
+            className="flex-row items-center justify-between rounded-[20px] bg-ft-card px-4 py-3">
+            <Text className="font-body-semibold text-sm text-ft-muted-2">Meus alimentos</Text>
+            <ChevronRightIcon />
+          </Pressable>
+        </View>
+
+        <View className="gap-2">
           <Text className="font-body-bold text-[10px] uppercase tracking-widest text-ft-muted-2">Aparência</Text>
           <Pressable
             onPress={toggleNightMode}
@@ -102,6 +113,10 @@ export function UserProfilePage({ user }: { user: AuthUser }) {
       </ScrollView>
     </SafeAreaView>
   );
+}
+
+function ChevronRightIcon() {
+  return <View className="h-2 w-2 rotate-45 border-r-[2.5px] border-t-[2.5px] border-ft-muted-3" />;
 }
 
 function ProfileSection({ title, rows }: { title: string; rows: ProfileStatRow[] }) {

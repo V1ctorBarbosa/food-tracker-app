@@ -4,7 +4,7 @@ import { ActivityIndicator, Keyboard, KeyboardAvoidingView, Pressable, ScrollVie
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { Food } from '@/entities/food';
-import { getFoodSourceLabel, getMeasurementUnitLabel, useCreateCustomFoodMutation, useFoodSearchQuery } from '@/entities/food';
+import { useCreateCustomFoodMutation, useFoodSearchQuery } from '@/entities/food';
 import {
   getMealTypeLabel,
   useCreateMealMutation,
@@ -14,9 +14,11 @@ import {
   type MealType,
 } from '@/entities/meal';
 import { buildLoggedAt, useSelectedDay } from '@/entities/selected-day';
+import { CustomFoodForm, EmptyCustomFoodFields, type CustomFoodValues } from '@/features/custom-food-form';
 import { resolveAddFoodBackLabel } from '@/pages/add-food/model/add-food-back-label';
-import { parseCustomFoodFields } from '@/pages/add-food/model/custom-food-form';
 import { calculateNutritionForQuantity, type NutritionPreview } from '@/pages/add-food/model/nutrition-preview';
+import { isSelectedFoodMissingFromResults } from '@/pages/add-food/model/selected-food-row';
+import { FoodRow } from '@/pages/add-food/ui/FoodRow';
 import { QuantityPanel } from '@/pages/add-food/ui/QuantityPanel';
 import { useThemeColors } from '@/shared/config/theme';
 import { parseDecimalInput } from '@/shared/lib/parse-decimal';
@@ -36,11 +38,6 @@ export function AddFoodPage() {
   const [selectedFood, setSelectedFood] = useState<Food | null>(null);
   const [quantityGrams, setQuantityGrams] = useState(100);
   const [isCustomFoodFormVisible, setIsCustomFoodFormVisible] = useState(false);
-  const [customFoodName, setCustomFoodName] = useState('');
-  const [customFoodCalories, setCustomFoodCalories] = useState('');
-  const [customFoodProtein, setCustomFoodProtein] = useState('');
-  const [customFoodCarbs, setCustomFoodCarbs] = useState('');
-  const [customFoodFat, setCustomFoodFat] = useState('');
 
   const foodSearchQuery = useFoodSearchQuery(searchText);
   const existingMealQuery = useMealQuery(mealId);
@@ -92,29 +89,16 @@ export function AddFoodPage() {
     setQuantityGrams(Math.max(MinimumQuantityGrams, parsedQuantity));
   }
 
-  const parsedCustomFood = parseCustomFoodFields({
-    name: customFoodName,
-    calories: customFoodCalories,
-    protein: customFoodProtein,
-    carbs: customFoodCarbs,
-    fat: customFoodFat,
-  });
-  const canSaveCustomFood = parsedCustomFood !== null;
-
-  async function handleSaveCustomFood() {
-    if (parsedCustomFood === null) {
-      return;
-    }
-
-    const createdFood = await createCustomFoodMutation.mutateAsync(parsedCustomFood);
+  async function handleSaveCustomFood(values: CustomFoodValues) {
+    const createdFood = await createCustomFoodMutation.mutateAsync(values);
 
     handleSelectFood(createdFood);
     setIsCustomFoodFormVisible(false);
-    setCustomFoodName('');
-    setCustomFoodCalories('');
-    setCustomFoodProtein('');
-    setCustomFoodCarbs('');
-    setCustomFoodFat('');
+  }
+
+  let customFoodErrorMessage: string | null = null;
+  if (createCustomFoodMutation.isError) {
+    customFoodErrorMessage = 'Não foi possível salvar esse alimento. Tente novamente.';
   }
 
   async function handlePressAdd() {
@@ -162,6 +146,8 @@ export function AddFoodPage() {
     preview = calculateNutritionForQuantity(selectedFood, quantityGrams);
   }
 
+  const showSelectedFoodRow = isSelectedFoodMissingFromResults(selectedFood, foodSearchQuery.data);
+
   let customFoodToggleLabel = 'Adicionar alimento personalizado';
   if (isCustomFoodFormVisible) {
     customFoodToggleLabel = 'Cancelar alimento personalizado';
@@ -198,31 +184,20 @@ export function AddFoodPage() {
           </Pressable>
 
           {isCustomFoodFormVisible && (
-            <View className="gap-3 rounded-[22px] bg-ft-card p-5">
-              <Text className="font-body-bold text-xs uppercase tracking-widest text-ft-muted-2">Novo alimento (por 100g)</Text>
-              <TextInput
-                value={customFoodName}
-                onChangeText={setCustomFoodName}
-                placeholder="Nome"
-                placeholderTextColor={colors.textMuted3}
-                className="h-[50px] rounded-xl border-0 bg-ft-bg px-4 font-body-medium text-base text-ft-ink outline-none"
-              />
-              <View className="flex-row gap-2.5">
-                <CustomFoodField label="Kcal" value={customFoodCalories} onChangeText={setCustomFoodCalories} />
-                <CustomFoodField label="Proteína (g)" value={customFoodProtein} onChangeText={setCustomFoodProtein} />
-              </View>
-              <View className="flex-row gap-2.5">
-                <CustomFoodField label="Carboidrato (g)" value={customFoodCarbs} onChangeText={setCustomFoodCarbs} />
-                <CustomFoodField label="Gordura (g)" value={customFoodFat} onChangeText={setCustomFoodFat} />
-              </View>
-              {createCustomFoodMutation.isError && <ErrorMessage message="Não foi possível salvar esse alimento. Tente novamente." />}
-              <Pressable
-                onPress={handleSaveCustomFood}
-                disabled={!canSaveCustomFood || createCustomFoodMutation.isPending}
-                className="h-[50px] items-center justify-center rounded-xl bg-ft-calories disabled:opacity-40">
-                {createCustomFoodMutation.isPending && <ActivityIndicator color="white" />}
-                {!createCustomFoodMutation.isPending && <Text className="font-body-bold text-sm text-white">Salvar</Text>}
-              </Pressable>
+            <CustomFoodForm
+              title="Novo alimento (por 100g)"
+              initialFields={EmptyCustomFoodFields}
+              submitLabel="Salvar"
+              isSaving={createCustomFoodMutation.isPending}
+              errorMessage={customFoodErrorMessage}
+              onSubmit={handleSaveCustomFood}
+            />
+          )}
+
+          {selectedFood !== null && showSelectedFoodRow && (
+            <View className="gap-2">
+              <Text className="font-body-bold text-[10px] uppercase tracking-widest text-ft-muted-2">Alimento selecionado</Text>
+              <FoodRow food={selectedFood} isSelected onPress={handleSelectFood} />
             </View>
           )}
 
@@ -232,7 +207,6 @@ export function AddFoodPage() {
             selectedFoodId={selectedFood?.id ?? null}
             onSelectFood={handleSelectFood}
           />
-
         </ScrollView>
 
         <View className="gap-3 px-7 pb-3 pt-2">
@@ -258,32 +232,6 @@ export function AddFoodPage() {
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
-  );
-}
-
-function CustomFoodField({
-  label,
-  value,
-  onChangeText,
-}: {
-  label: string;
-  value: string;
-  onChangeText: (text: string) => void;
-}) {
-  const colors = useThemeColors();
-
-  return (
-    <View className="flex-1 gap-1.5">
-      <Text className="font-body-semibold text-[10px] uppercase tracking-widest text-ft-muted-2">{label}</Text>
-      <TextInput
-        value={value}
-        onChangeText={onChangeText}
-        keyboardType="numeric"
-        placeholder="0"
-        placeholderTextColor={colors.textMuted3}
-        className="h-[46px] rounded-xl border-0 bg-ft-bg px-3 text-center font-body-medium text-base text-ft-ink outline-none"
-      />
-    </View>
   );
 }
 
@@ -321,34 +269,9 @@ function FoodSearchResults({
   return (
     <View className="gap-2">
       <Text className="font-body-bold text-[10px] uppercase tracking-widest text-ft-muted-2">{query.data.length} resultados</Text>
-      {query.data.map((food) => {
-        const isSelected = food.id === selectedFoodId;
-        const baseUnitLabel = getMeasurementUnitLabel(food.baseUnitType);
-        return (
-          <Pressable
-            key={food.id}
-            onPress={() => onSelectFood(food)}
-            className={`flex-row items-center justify-between rounded-2xl px-4 py-3 ${isSelected ? 'bg-ft-calories' : 'bg-ft-card'}`}>
-            <View className="flex-1 gap-0.5">
-              <View className="flex-row items-center gap-1.5">
-                <Text className={`flex-shrink font-body-semibold text-sm ${isSelected ? 'text-white' : 'text-ft-ink'}`}>
-                  {food.name}
-                </Text>
-                <View className={`rounded px-1.5 py-0.5 ${isSelected ? 'bg-ft-calories-dark' : 'bg-ft-bg'}`}>
-                  <Text className={`font-body-bold text-[8px] uppercase tracking-wide ${isSelected ? 'text-blue-200' : 'text-ft-muted-2'}`}>
-                    {getFoodSourceLabel(food.source)}
-                  </Text>
-                </View>
-              </View>
-              <Text className={`font-body text-xs ${isSelected ? 'text-blue-200' : 'text-ft-muted-2'}`}>
-                {food.caloriesPerBaseUnit} kcal · {food.proteinPerBaseUnit}P / {food.carbsPerBaseUnit}C / {food.fatPerBaseUnit}G por{' '}
-                {food.baseUnitQuantity} {baseUnitLabel}
-              </Text>
-            </View>
-            {isSelected && <Text className="font-body-bold text-base text-white">✓</Text>}
-          </Pressable>
-        );
-      })}
+      {query.data.map((food) => (
+        <FoodRow key={food.id} food={food} isSelected={food.id === selectedFoodId} onPress={onSelectFood} />
+      ))}
     </View>
   );
 }
