@@ -1,10 +1,11 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Keyboard, KeyboardAvoidingView, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import Animated, { FadeIn, FadeOut, LinearTransition } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { Food } from '@/entities/food';
-import { useCreateCustomFoodMutation, useFoodSearchQuery } from '@/entities/food';
+import { getMeasurementUnitLabel, useCreateCustomFoodMutation, useFoodSearchQuery } from '@/entities/food';
 import {
   getMealTypeLabel,
   useCreateMealMutation,
@@ -21,13 +22,18 @@ import { isSelectedFoodMissingFromResults } from '@/pages/add-food/model/selecte
 import { FoodRow } from '@/pages/add-food/ui/FoodRow';
 import { QuantityPanel } from '@/pages/add-food/ui/QuantityPanel';
 import { useThemeColors } from '@/shared/config/theme';
+import { MotionDurationMs } from '@/shared/lib/motion';
 import { parseDecimalInput } from '@/shared/lib/parse-decimal';
 import { BackPill } from '@/shared/ui/BackPill';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { LoadingBar } from '@/shared/ui/LoadingBar';
 
-const QuantityStepGrams = 10;
-const MinimumQuantityGrams = 1;
+const QuantityStep = 10;
+const MinimumQuantity = 1;
+
+const AppearTransition = FadeIn.duration(MotionDurationMs.listEnter);
+const DisappearTransition = FadeOut.duration(MotionDurationMs.listExit);
+const ReflowTransition = LinearTransition.duration(MotionDurationMs.listReflow);
 
 export function AddFoodPage() {
   const router = useRouter();
@@ -36,7 +42,7 @@ export function AddFoodPage() {
   const { mealType, mealId } = useLocalSearchParams<{ mealType: MealType; mealId?: string }>();
   const [searchText, setSearchText] = useState('');
   const [selectedFood, setSelectedFood] = useState<Food | null>(null);
-  const [quantityGrams, setQuantityGrams] = useState(100);
+  const [quantity, setQuantity] = useState(100);
   const [isCustomFoodFormVisible, setIsCustomFoodFormVisible] = useState(false);
 
   const foodSearchQuery = useFoodSearchQuery(searchText);
@@ -73,11 +79,11 @@ export function AddFoodPage() {
   function handleSelectFood(food: Food) {
     Keyboard.dismiss();
     setSelectedFood(food);
-    setQuantityGrams(food.baseUnitQuantity);
+    setQuantity(food.baseUnitQuantity);
   }
 
-  function handleAdjustQuantity(deltaGrams: number) {
-    setQuantityGrams((previousQuantity) => Math.max(MinimumQuantityGrams, previousQuantity + deltaGrams));
+  function handleAdjustQuantity(delta: number) {
+    setQuantity((previousQuantity) => Math.max(MinimumQuantity, previousQuantity + delta));
   }
 
   function handleChangeQuantityText(text: string) {
@@ -86,7 +92,7 @@ export function AddFoodPage() {
       return;
     }
 
-    setQuantityGrams(Math.max(MinimumQuantityGrams, parsedQuantity));
+    setQuantity(Math.max(MinimumQuantity, parsedQuantity));
   }
 
   async function handleSaveCustomFood(values: CustomFoodValues) {
@@ -108,8 +114,8 @@ export function AddFoodPage() {
 
     const newItem: MealItemRequest = {
       foodId: selectedFood.id,
-      quantity: quantityGrams,
-      unit: 'Gram',
+      quantity,
+      unit: selectedFood.baseUnitType,
       foodServingId: null,
       servingCount: null,
     };
@@ -143,7 +149,7 @@ export function AddFoodPage() {
 
   let preview: NutritionPreview | null = null;
   if (selectedFood !== null) {
-    preview = calculateNutritionForQuantity(selectedFood, quantityGrams);
+    preview = calculateNutritionForQuantity(selectedFood, quantity);
   }
 
   const showSelectedFoodRow = isSelectedFoodMissingFromResults(selectedFood, foodSearchQuery.data);
@@ -184,51 +190,64 @@ export function AddFoodPage() {
           </Pressable>
 
           {isCustomFoodFormVisible && (
-            <CustomFoodForm
-              title="Novo alimento (por 100g)"
-              initialFields={EmptyCustomFoodFields}
-              submitLabel="Salvar"
-              isSaving={createCustomFoodMutation.isPending}
-              errorMessage={customFoodErrorMessage}
-              onSubmit={handleSaveCustomFood}
-            />
+            <Animated.View entering={AppearTransition} exiting={DisappearTransition} layout={ReflowTransition}>
+              <CustomFoodForm
+                title="Novo alimento"
+                initialFields={EmptyCustomFoodFields}
+                submitLabel="Salvar"
+                isSaving={createCustomFoodMutation.isPending}
+                errorMessage={customFoodErrorMessage}
+                onSubmit={handleSaveCustomFood}
+              />
+            </Animated.View>
           )}
 
           {selectedFood !== null && showSelectedFoodRow && (
-            <View className="gap-2">
+            <Animated.View entering={AppearTransition} exiting={DisappearTransition} layout={ReflowTransition} className="gap-2">
               <Text className="font-body-bold text-[10px] uppercase tracking-widest text-ft-muted-2">Alimento selecionado</Text>
               <FoodRow food={selectedFood} isSelected onPress={handleSelectFood} />
-            </View>
+            </Animated.View>
           )}
 
-          <FoodSearchResults
-            query={foodSearchQuery}
-            searchText={searchText}
-            selectedFoodId={selectedFood?.id ?? null}
-            onSelectFood={handleSelectFood}
-          />
+          <Animated.View layout={ReflowTransition}>
+            <FoodSearchResults
+              query={foodSearchQuery}
+              searchText={searchText}
+              selectedFoodId={selectedFood?.id ?? null}
+              onSelectFood={handleSelectFood}
+            />
+          </Animated.View>
         </ScrollView>
 
         <View className="gap-3 px-7 pb-3 pt-2">
           {selectedFood !== null && preview !== null && (
-            <QuantityPanel
-              quantityGrams={quantityGrams}
-              preview={preview}
-              stepGrams={QuantityStepGrams}
-              onAdjustQuantity={handleAdjustQuantity}
-              onChangeQuantityText={handleChangeQuantityText}
-            />
+            <Animated.View entering={AppearTransition} exiting={DisappearTransition} layout={ReflowTransition}>
+              <QuantityPanel
+                quantity={quantity}
+                unitLabel={getMeasurementUnitLabel(selectedFood.baseUnitType)}
+                preview={preview}
+                step={QuantityStep}
+                onAdjustQuantity={handleAdjustQuantity}
+                onChangeQuantityText={handleChangeQuantityText}
+              />
+            </Animated.View>
           )}
 
-          {saveError && <ErrorMessage message="Não foi possível salvar essa refeição. Tente novamente." />}
+          {saveError && (
+            <Animated.View entering={AppearTransition} exiting={DisappearTransition} layout={ReflowTransition}>
+              <ErrorMessage message="Não foi possível salvar essa refeição. Tente novamente." />
+            </Animated.View>
+          )}
 
-          <Pressable
-            onPress={handlePressAdd}
-            disabled={selectedFood === null || isSaving}
-            className="h-[54px] items-center justify-center rounded-2xl bg-ft-calories disabled:opacity-40">
-            {isSaving && <ActivityIndicator color="white" />}
-            {!isSaving && <Text className="font-body-bold text-base text-white">Adicionar em {getMealTypeLabel(mealType)}</Text>}
-          </Pressable>
+          <Animated.View layout={ReflowTransition}>
+            <Pressable
+              onPress={handlePressAdd}
+              disabled={selectedFood === null || isSaving}
+              className="h-[54px] items-center justify-center rounded-2xl bg-ft-calories disabled:opacity-40">
+              {isSaving && <ActivityIndicator color="white" />}
+              {!isSaving && <Text className="font-body-bold text-base text-white">Adicionar em {getMealTypeLabel(mealType)}</Text>}
+            </Pressable>
+          </Animated.View>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -263,7 +282,7 @@ function FoodSearchResults({
   }
 
   if (query.data.length === 0) {
-    return <Text className="font-body text-sm text-ft-muted-2">Nenhum alimento encontrado para "{searchText}".</Text>;
+    return <Text className="font-body text-sm text-ft-muted-2">Nenhum alimento encontrado para &quot;{searchText}&quot;.</Text>;
   }
 
   return (

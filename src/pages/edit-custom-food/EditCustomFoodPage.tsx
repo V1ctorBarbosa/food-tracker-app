@@ -9,7 +9,7 @@ import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { LoadingBar } from '@/shared/ui/LoadingBar';
 
 const BackLabel = 'Meus alimentos';
-const FormTitle = 'Valores por 100 g';
+const FormTitle = 'Valores';
 const SaveErrorMessage = 'Não foi possível salvar as alterações. Tente novamente.';
 
 export function EditCustomFoodPage() {

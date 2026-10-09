@@ -49,7 +49,7 @@ export function CustomFoodsPage() {
       <ScrollView className="flex-1" contentContainerClassName="gap-4 px-7 pt-4 pb-8" showsVerticalScrollIndicator={false}>
         <View className="gap-1">
           <Text className="font-display text-4xl uppercase text-ft-ink">Meus alimentos</Text>
-          <Text className="font-body text-sm text-ft-muted-2">Valores por 100 g. Toque em um alimento para editar.</Text>
+          <Text className="font-body text-sm text-ft-muted-2">Toque em um alimento para editar.</Text>
         </View>
 
         {customFoods.length === 0 && <Text className="font-body text-sm text-ft-muted-2">{EmptyListMessage}</Text>}
