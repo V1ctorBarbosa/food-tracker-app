@@ -22,7 +22,6 @@ import {
   type DateRange,
   type DateRangePresetId,
 } from '@/pages/charts/model/date-range';
-import { SelectionChip } from '@/pages/charts/SelectionChip';
 import {
   buildAxisTicks,
   buildLineChartCoordinates,
@@ -33,6 +32,7 @@ import {
 import { useThemeColors } from '@/shared/config/theme';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { LoadingBar } from '@/shared/ui/LoadingBar';
+import { SelectionChip } from '@/shared/ui/SelectionChip';
 
 const ChartWidth = 320;
 const ChartHeight = 120;
