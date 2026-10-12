@@ -43,7 +43,11 @@ export function SelectionChip({
   }));
 
   return (
-    <Pressable onPress={onPress} className="overflow-hidden rounded-full border border-ft-muted-3/40 px-3.5 py-1.5">
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityState={{ selected: isSelected }}
+      className="overflow-hidden rounded-full border border-ft-muted-3/40 px-3.5 py-1.5">
       <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: color }, fillStyle]} />
       <Animated.Text className="font-body-bold text-[11px] uppercase tracking-widest" style={labelStyle}>
         {label}

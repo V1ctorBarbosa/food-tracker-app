@@ -1,11 +1,18 @@
-import type { Food } from '@/entities/food';
+import { toCustomFoodBaseUnit, type Food } from '@/entities/food';
 import { formatMaxDecimals } from '@/shared/lib/format';
 
 import type { CustomFoodFormFields } from './custom-food-form';
 
 const MacroDecimalPlaces = 2;
 
-export const EmptyCustomFoodFields: CustomFoodFormFields = { name: '', calories: '', protein: '', carbs: '', fat: '' };
+export const EmptyCustomFoodFields: CustomFoodFormFields = {
+  name: '',
+  calories: '',
+  protein: '',
+  carbs: '',
+  fat: '',
+  baseUnitType: 'Gram',
+};
 
 /**
  * A saved food as the form's text fields. Macros use the pt-BR comma the form accepts as input;
@@ -18,5 +25,6 @@ export function foodToFormFields(food: Food): CustomFoodFormFields {
     protein: formatMaxDecimals(food.proteinPerBaseUnit, MacroDecimalPlaces),
     carbs: formatMaxDecimals(food.carbsPerBaseUnit, MacroDecimalPlaces),
     fat: formatMaxDecimals(food.fatPerBaseUnit, MacroDecimalPlaces),
+    baseUnitType: toCustomFoodBaseUnit(food.baseUnitType),
   };
 }

@@ -1,16 +1,16 @@
 import { isCustomFoodFormValid, parseCustomFoodFields, type CustomFoodFormFields } from './custom-food-form';
 
-const validFields: CustomFoodFormFields = { name: 'My whey', calories: '120', protein: '24', carbs: '3', fat: '1.5' };
+const validFields: CustomFoodFormFields = { name: 'My whey', calories: '120', protein: '24', carbs: '3', fat: '1.5', baseUnitType: 'Gram' };
 
 describe('parseCustomFoodFields', () => {
   test('returns the name and macros as numbers', () => {
-    expect(parseCustomFoodFields(validFields)).toEqual({ name: 'My whey', calories: 120, protein: 24, carbs: 3, fat: 1.5 });
+    expect(parseCustomFoodFields(validFields)).toEqual({ name: 'My whey', calories: 120, protein: 24, carbs: 3, fat: 1.5, baseUnitType: 'Gram' });
   });
 
   test('accepts the comma a Brazilian keyboard types as the decimal separator', () => {
-    const fields: CustomFoodFormFields = { name: 'Suco de laranja', calories: '45', protein: '0,7', carbs: '10', fat: '0,2' };
+    const fields: CustomFoodFormFields = { name: 'Suco de laranja', calories: '45', protein: '0,7', carbs: '10', fat: '0,2', baseUnitType: 'Milliliter' };
 
-    expect(parseCustomFoodFields(fields)).toEqual({ name: 'Suco de laranja', calories: 45, protein: 0.7, carbs: 10, fat: 0.2 });
+    expect(parseCustomFoodFields(fields)).toEqual({ name: 'Suco de laranja', calories: 45, protein: 0.7, carbs: 10, fat: 0.2, baseUnitType: 'Milliliter' });
   });
 
   test('trims the name', () => {
@@ -24,11 +24,11 @@ describe('parseCustomFoodFields', () => {
 
 describe('isCustomFoodFormValid with decimal commas', () => {
   test('returns true for macros typed with a comma', () => {
-    expect(isCustomFoodFormValid({ ...validFields, protein: '0,7', fat: '0,2' })).toBe(true);
+    expect(isCustomFoodFormValid({ ...validFields, protein: '0,7', fat: '0,2', baseUnitType: 'Milliliter' })).toBe(true);
   });
 
   test('enables saving the orange juice that could not be saved before (45 kcal, 0,7 / 10 / 0,2)', () => {
-    const orangeJuice: CustomFoodFormFields = { name: 'Suco de laranja', calories: '45', protein: '0,7', carbs: '10', fat: '0,2' };
+    const orangeJuice: CustomFoodFormFields = { name: 'Suco de laranja', calories: '45', protein: '0,7', carbs: '10', fat: '0,2', baseUnitType: 'Milliliter' };
 
     expect(isCustomFoodFormValid(orangeJuice)).toBe(true);
   });

@@ -3,6 +3,12 @@ import type { Food } from '@/entities/food';
 import { parseCustomFoodFields } from './custom-food-form';
 import { EmptyCustomFoodFields, foodToFormFields } from './food-to-form-fields';
 
+// @/entities/food's barrel also re-exports its query hooks, which pull in firebase/auth through the
+// shared API client -- mocked here so importing the barrel's pure unit helpers doesn't require
+// Firebase's ESM build to run under Jest.
+jest.mock('@/shared/api/firebase', () => ({ auth: {} }));
+jest.mock('firebase/auth', () => ({ onAuthStateChanged: jest.fn() }));
+
 function buildFood(overrides: Partial<Food>): Food {
   return {
     id: 'food-1',
@@ -21,7 +27,7 @@ function buildFood(overrides: Partial<Food>): Food {
 
 describe('foodToFormFields', () => {
   test('turns a food into the form text, with the comma for decimals', () => {
-    expect(foodToFormFields(buildFood({}))).toEqual({ name: 'My whey', calories: '120', protein: '24', carbs: '3', fat: '1,5' });
+    expect(foodToFormFields(buildFood({}))).toEqual({ name: 'My whey', calories: '120', protein: '24', carbs: '3', fat: '1,5', baseUnitType: 'Gram' });
   });
 
   test('keeps at most two decimal places', () => {
@@ -46,11 +52,22 @@ describe('foodToFormFields', () => {
       protein: 9.5,
       carbs: 62.25,
       fat: 12,
+      baseUnitType: 'Gram',
     });
   });
 });
 
+describe('foodToFormFields for a drink', () => {
+  test('keeps a drink as a drink', () => {
+    expect(foodToFormFields(buildFood({ baseUnitType: 'Milliliter' })).baseUnitType).toBe('Milliliter');
+  });
+});
+
 describe('EmptyCustomFoodFields', () => {
+  test('starts as a food, per 100 g', () => {
+    expect(EmptyCustomFoodFields.baseUnitType).toBe('Gram');
+  });
+
   test('is not a valid food yet', () => {
     expect(parseCustomFoodFields(EmptyCustomFoodFields)).toBeNull();
   });
