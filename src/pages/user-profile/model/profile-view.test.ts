@@ -22,6 +22,7 @@ const baseProfile: UserProfile = {
   dailyProteinTargetGrams: null,
   dailyCarbsTargetGrams: null,
   dailyFatTargetGrams: null,
+  canEstimateMeals: false,
 };
 
 describe('buildBodyStatRows', () => {

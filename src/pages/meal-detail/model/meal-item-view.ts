@@ -1,4 +1,35 @@
+import type { MealCapture, MealItem } from '@/entities/meal';
+
 const PercentScale = 100;
+
+/** The same step and floor as the add-food screen, so an amount is edited the way it was entered. */
+export const ItemQuantityStep = 10;
+export const MinimumItemQuantity = 1;
+
+export function adjustItemQuantity(quantity: number, delta: number): number {
+  return Math.max(MinimumItemQuantity, quantity + delta);
+}
+
+/** The typed amount, kept at or above the floor; null while the text is not a number yet. */
+export function parseItemQuantity(parsedQuantity: number | null): number | null {
+  if (parsedQuantity === null) {
+    return null;
+  }
+
+  return Math.max(MinimumItemQuantity, parsedQuantity);
+}
+
+/** The edit-mode hint: a tap edits the amount, a swipe deletes. */
+export const EditItemsHint = 'Toque para mudar a quantidade · deslize para apagar';
+
+/** The captures with something to show: a photo, a description, or both. */
+export function selectCapturesToShow(captures: readonly MealCapture[]): MealCapture[] {
+  return captures.filter((capture) => capture.photoUrl !== null || capture.description !== null);
+}
+
+export function findMealItem(items: readonly MealItem[], itemId: string | undefined): MealItem | null {
+  return items.find((item) => item.id === itemId) ?? null;
+}
 
 export type MealItemMacros = {
   quantity: number;

@@ -8,3 +8,4 @@ export { useFoodSearchQuery } from './model/use-food-search-query';
 export { useFoodsByIdsQuery } from './model/use-foods-by-ids-query';
 export { useUpdateCustomFoodMutation } from './model/use-update-custom-food-mutation';
 export { findCustomFoodById, formatCustomFoodSummary, formatPerBaseUnit } from './model/custom-food-view';
+export { calculateNutritionForQuantity } from './model/nutrition-preview';

@@ -1,11 +1,6 @@
-import type { Food } from '@/entities/food';
+import type { NutritionPreview } from '@/shared/lib/nutrition-preview-labels';
 
-export type NutritionPreview = {
-  calories: number;
-  protein: number;
-  carbs: number;
-  fat: number;
-};
+import type { Food } from './food.types';
 
 /**
  * Mirrors the backend's NutritionCalculator.Calculate so the live preview shown here matches what

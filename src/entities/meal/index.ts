@@ -1,6 +1,9 @@
 export type {
   CreateMealRequest,
+  EstimatedFood,
   Meal,
+  MealCapture,
+  MealCaptureRequest,
   MealItem,
   MealItemRequest,
   MealSummary,
@@ -8,6 +11,15 @@ export type {
   UpdateMealRequest,
 } from './model/meal.types';
 export { getMealTypeLabel } from './model/meal-type-labels';
+export {
+  collectCatalogFoodIds,
+  isEstimatedMealItem,
+  resolveMealItemName,
+  scaleMealItemNutrition,
+  toMealCaptureRequest,
+  toMealItemRequest,
+  toMealItemRequestsWithQuantity,
+} from './model/meal-requests';
 export { useCreateMealMutation } from './model/use-create-meal-mutation';
 export { useDeleteMealMutation } from './model/use-delete-meal-mutation';
 export { useMealQuery } from './model/use-meal-query';

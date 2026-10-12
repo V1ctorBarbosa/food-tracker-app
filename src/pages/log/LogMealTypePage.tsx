@@ -44,7 +44,7 @@ export function LogMealTypePage() {
       return;
     }
 
-    router.push({ pathname: '/add-food', params: { mealType } });
+    router.push({ pathname: '/add-meal', params: { mealType } });
   }
 
   return (

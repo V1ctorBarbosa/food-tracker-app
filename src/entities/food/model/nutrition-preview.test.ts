@@ -1,5 +1,5 @@
 import { calculateNutritionForQuantity } from './nutrition-preview';
-import type { Food } from '@/entities/food';
+import type { Food } from './food.types';
 
 const chickenBreastRaw: Food = {
   id: 'food-1',

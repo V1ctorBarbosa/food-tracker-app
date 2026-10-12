@@ -1,29 +1,47 @@
+import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { KeyboardAvoidingView, Pressable, ScrollView, Text, View } from 'react-native';
+import Animated, { FadeIn, FadeOut, LinearTransition } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { getMeasurementUnitLabel, useFoodsByIdsQuery } from '@/entities/food';
 import {
+  collectCatalogFoodIds,
   getMealTypeLabel,
+  isEstimatedMealItem,
+  resolveMealItemName,
+  scaleMealItemNutrition,
+  toMealItemRequest,
+  toMealItemRequestsWithQuantity,
   useDeleteMealMutation,
   useMealQuery,
   useUpdateMealMutation,
+  type MealCapture,
   type MealItem,
   type MealItemRequest,
 } from '@/entities/meal';
 import {
+  adjustItemQuantity,
   calculateMacroSharePercents,
+  EditItemsHint,
+  findMealItem,
   formatItemCalories,
   formatItemCountLabel,
   formatMealItemMacros,
+  ItemQuantityStep,
+  parseItemQuantity,
+  selectCapturesToShow,
 } from '@/pages/meal-detail/model/meal-item-view';
 import { formatWholeNumber } from '@/shared/lib/format';
+import { MotionDurationMs } from '@/shared/lib/motion';
+import { parseDecimalInput } from '@/shared/lib/parse-decimal';
 import { AnimatedNumber } from '@/shared/ui/AnimatedNumber';
 import { BackPill } from '@/shared/ui/BackPill';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { LoadingBar } from '@/shared/ui/LoadingBar';
 import { ProgressBarFill } from '@/shared/ui/ProgressBar';
+import { QuantityPanel } from '@/shared/ui/QuantityPanel';
 import { SwipeToDeleteRow } from '@/shared/ui/SwipeToDeleteRow';
 
 const HomeBackLabel = 'Hoje';
@@ -31,16 +49,22 @@ const HomeHref = '/today';
 
 const DateTimeLabelFormatter = new Intl.DateTimeFormat('pt-BR', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
 
+const AppearTransition = FadeIn.duration(MotionDurationMs.listEnter);
+const DisappearTransition = FadeOut.duration(MotionDurationMs.listExit);
+const ReflowTransition = LinearTransition.duration(MotionDurationMs.listReflow);
+
+type QuantityEdit = { itemId: string; quantity: number };
+
 export function MealDetailPage() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [isEditingItems, setIsEditingItems] = useState(false);
+  const [quantityEdit, setQuantityEdit] = useState<QuantityEdit | null>(null);
   const [wasMealDeleted, setWasMealDeleted] = useState(false);
   const mealQuery = useMealQuery(id);
   const updateMealMutation = useUpdateMealMutation();
   const deleteMealMutation = useDeleteMealMutation();
-  const itemFoodIds = mealQuery.data?.items.map((item) => item.foodId) ?? [];
-  const foodsQuery = useFoodsByIdsQuery(itemFoodIds);
+  const foodsQuery = useFoodsByIdsQuery(collectCatalogFoodIds(mealQuery.data?.items ?? []));
 
   function handlePressBack() {
     router.dismissTo(HomeHref);
@@ -82,6 +106,7 @@ export function MealDetailPage() {
 
   const meal = mealQuery.data;
   const itemCountLabel = formatItemCountLabel(meal.items.length);
+  const capturesToShow = selectCapturesToShow(meal.captures);
 
   let editButtonLabel = 'Editar';
   let editButtonClassName = 'bg-white';
@@ -92,10 +117,15 @@ export function MealDetailPage() {
     editButtonTextClassName = 'text-ft-ink';
   }
 
+  const editedItem = findMealItem(meal.items, quantityEdit?.itemId);
+
+  function handleToggleEditing() {
+    setIsEditingItems((previous) => !previous);
+    setQuantityEdit(null);
+  }
+
   async function handleRemoveItem(itemToRemove: MealItem) {
-    const remainingItems: MealItemRequest[] = meal.items
-      .filter((item) => item.id !== itemToRemove.id)
-      .map((item) => ({ foodId: item.foodId, quantity: item.quantity, unit: item.unit }));
+    const remainingItems: MealItemRequest[] = meal.items.filter((item) => item.id !== itemToRemove.id).map(toMealItemRequest);
 
     if (remainingItems.length === 0) {
       await deleteMealMutation.mutateAsync(meal.id);
@@ -106,65 +136,177 @@ export function MealDetailPage() {
     await updateMealMutation.mutateAsync({ id: meal.id, request: { mealType: meal.mealType, items: remainingItems } });
   }
 
+  function handleSelectItem(item: MealItem) {
+    setQuantityEdit({ itemId: item.id, quantity: item.quantity });
+  }
+
+  function handleAdjustQuantity(delta: number) {
+    setQuantityEdit((previous) => {
+      if (previous === null) {
+        return previous;
+      }
+
+      return { ...previous, quantity: adjustItemQuantity(previous.quantity, delta) };
+    });
+  }
+
+  function handleChangeQuantityText(text: string) {
+    const quantity = parseItemQuantity(parseDecimalInput(text));
+    if (quantity === null) {
+      return;
+    }
+
+    setQuantityEdit((previous) => {
+      if (previous === null) {
+        return previous;
+      }
+
+      return { ...previous, quantity };
+    });
+  }
+
+  async function handleSaveQuantity() {
+    if (quantityEdit === null) {
+      return;
+    }
+
+    const items = toMealItemRequestsWithQuantity(meal.items, quantityEdit.itemId, quantityEdit.quantity);
+    await updateMealMutation.mutateAsync({ id: meal.id, request: { mealType: meal.mealType, items } });
+    setQuantityEdit(null);
+  }
+
   return (
     <SafeAreaView className="flex-1 bg-ft-bg">
-      <View className="flex-row items-center justify-between px-7 pt-4">
-        <BackPill label={HomeBackLabel} onPress={handlePressBack} />
+      <KeyboardAvoidingView behavior="padding" className="flex-1">
+        <View className="flex-row items-center justify-between px-7 pt-4">
+          <BackPill label={HomeBackLabel} onPress={handlePressBack} />
+          <Pressable onPress={handleToggleEditing} hitSlop={12} className={`rounded-full px-4 py-1.5 ${editButtonClassName}`}>
+            <Text className={`font-body-bold text-sm ${editButtonTextClassName}`}>{editButtonLabel}</Text>
+          </Pressable>
+        </View>
+
+        <ScrollView className="flex-1" contentContainerClassName="gap-4 px-7 pt-4 pb-8" showsVerticalScrollIndicator={false}>
+          <Text className="font-body-bold text-xs uppercase tracking-widest text-ft-muted">
+            {DateTimeLabelFormatter.format(new Date(meal.loggedAt))}
+          </Text>
+          <Text className="font-display text-4xl uppercase text-ft-ink">{getMealTypeLabel(meal.mealType)}</Text>
+
+          <View className="flex-row items-baseline gap-2">
+            <AnimatedNumber value={meal.totalCalories} format={formatWholeNumber} className="font-display text-5xl text-ft-ink" />
+            <Text className="font-body-semibold text-base text-ft-muted-2">kcal</Text>
+          </View>
+
+          <MacroBar protein={meal.totalProtein} carbs={meal.totalCarbs} fat={meal.totalFat} />
+
+          <View className="flex-row items-center justify-between">
+            <Text className="font-body-bold text-[10px] uppercase tracking-widest text-ft-muted-2">{itemCountLabel}</Text>
+            {isEditingItems && (
+              <Animated.Text entering={AppearTransition} exiting={DisappearTransition} className="font-body-semibold text-[10px] text-ft-ink">
+                {EditItemsHint}
+              </Animated.Text>
+            )}
+          </View>
+
+          <Animated.View layout={ReflowTransition} className="gap-2.5">
+            {meal.items.map((item) => {
+              const foodName = resolveMealItemName(item, foodsQuery.foodsById.get(item.foodId ?? '')?.name);
+
+              if (!isEditingItems) {
+                return <MealItemRow key={item.id} item={item} foodName={foodName} />;
+              }
+
+              return (
+                <SwipeToDeleteRow key={item.id} animateEntry={false} onDelete={() => handleRemoveItem(item)}>
+                  <Pressable onPress={() => handleSelectItem(item)} accessibilityRole="button">
+                    <MealItemRow item={item} foodName={foodName} />
+                  </Pressable>
+                </SwipeToDeleteRow>
+              );
+            })}
+          </Animated.View>
+
+          {capturesToShow.length > 0 && (
+            <Animated.View entering={AppearTransition} exiting={DisappearTransition} layout={ReflowTransition} className="gap-2.5">
+              <Text className="font-body-bold text-[10px] uppercase tracking-widest text-ft-muted-2">Estimado por IA a partir de</Text>
+              {capturesToShow.map((capture) => (
+                <MealCaptureCard key={capture.id} capture={capture} />
+              ))}
+            </Animated.View>
+          )}
+
+          {(updateMealMutation.isError || deleteMealMutation.isError) && (
+            <Animated.View entering={AppearTransition} exiting={DisappearTransition}>
+              <ErrorMessage message="Não foi possível atualizar essa refeição. Tente novamente." />
+            </Animated.View>
+          )}
+
+          <Pressable
+            onPress={() => router.push({ pathname: '/add-meal', params: { mealType: meal.mealType, mealId: meal.id } })}
+            className="h-[54px] items-center justify-center rounded-2xl border border-ft-ink bg-transparent">
+            <Text className="font-body-bold text-sm text-ft-ink">Adicionar item</Text>
+          </Pressable>
+        </ScrollView>
+
+        {editedItem !== null && quantityEdit !== null && (
+          <Animated.View entering={AppearTransition} exiting={DisappearTransition} className="gap-3 px-7 pb-3 pt-2">
+            <ItemQuantityEditor
+              item={editedItem}
+              quantity={quantityEdit.quantity}
+              isSaving={updateMealMutation.isPending}
+              onAdjustQuantity={handleAdjustQuantity}
+              onChangeQuantityText={handleChangeQuantityText}
+              onSave={handleSaveQuantity}
+              onCancel={() => setQuantityEdit(null)}
+            />
+          </Animated.View>
+        )}
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
+}
+
+function ItemQuantityEditor({
+  item,
+  quantity,
+  isSaving,
+  onAdjustQuantity,
+  onChangeQuantityText,
+  onSave,
+  onCancel,
+}: {
+  item: MealItem;
+  quantity: number;
+  isSaving: boolean;
+  onAdjustQuantity: (delta: number) => void;
+  onChangeQuantityText: (text: string) => void;
+  onSave: () => void;
+  onCancel: () => void;
+}) {
+  const preview = scaleMealItemNutrition(item, quantity);
+  const unitLabel = getMeasurementUnitLabel(item.unit);
+
+  return (
+    <View className="gap-3">
+      <QuantityPanel
+        quantity={quantity}
+        unitLabel={unitLabel}
+        preview={preview}
+        step={ItemQuantityStep}
+        onAdjustQuantity={onAdjustQuantity}
+        onChangeQuantityText={onChangeQuantityText}
+      />
+      <View className="flex-row gap-3">
+        <Pressable onPress={onCancel} className="h-[54px] flex-1 items-center justify-center rounded-2xl border border-ft-ink">
+          <Text className="font-body-bold text-base text-ft-ink">Cancelar</Text>
+        </Pressable>
         <Pressable
-          onPress={() => setIsEditingItems((previous) => !previous)}
-          hitSlop={12}
-          className={`rounded-full px-4 py-1.5 ${editButtonClassName}`}>
-          <Text className={`font-body-bold text-sm ${editButtonTextClassName}`}>{editButtonLabel}</Text>
+          onPress={onSave}
+          disabled={isSaving}
+          className="h-[54px] flex-1 items-center justify-center rounded-2xl bg-ft-calories disabled:opacity-40">
+          <Text className="font-body-bold text-base text-white">Salvar</Text>
         </Pressable>
       </View>
-
-      <ScrollView className="flex-1" contentContainerClassName="gap-4 px-7 pt-4 pb-8" showsVerticalScrollIndicator={false}>
-        <Text className="font-body-bold text-xs uppercase tracking-widest text-ft-muted">
-          {DateTimeLabelFormatter.format(new Date(meal.loggedAt))}
-        </Text>
-        <Text className="font-display text-4xl uppercase text-ft-ink">{getMealTypeLabel(meal.mealType)}</Text>
-
-        <View className="flex-row items-baseline gap-2">
-          <AnimatedNumber value={meal.totalCalories} format={formatWholeNumber} className="font-display text-5xl text-ft-ink" />
-          <Text className="font-body-semibold text-base text-ft-muted-2">kcal</Text>
-        </View>
-
-        <MacroBar protein={meal.totalProtein} carbs={meal.totalCarbs} fat={meal.totalFat} />
-
-        <View className="flex-row items-center justify-between">
-          <Text className="font-body-bold text-[10px] uppercase tracking-widest text-ft-muted-2">{itemCountLabel}</Text>
-          {isEditingItems && (
-            <Text className="font-body-semibold text-[10px] text-ft-ink">Deslize para a esquerda para apagar</Text>
-          )}
-        </View>
-
-        <View className="gap-2.5">
-          {meal.items.map((item) => {
-            const foodName = foodsQuery.foodsById.get(item.foodId)?.name ?? '—';
-
-            if (!isEditingItems) {
-              return <MealItemRow key={item.id} item={item} foodName={foodName} />;
-            }
-
-            return (
-              <SwipeToDeleteRow key={item.id} animateEntry={false} onDelete={() => handleRemoveItem(item)}>
-                <MealItemRow item={item} foodName={foodName} />
-              </SwipeToDeleteRow>
-            );
-          })}
-        </View>
-
-        {(updateMealMutation.isError || deleteMealMutation.isError) && (
-          <ErrorMessage message="Não foi possível atualizar essa refeição. Tente novamente." />
-        )}
-
-        <Pressable
-          onPress={() => router.push({ pathname: '/add-food', params: { mealType: meal.mealType, mealId: meal.id } })}
-          className="h-[54px] items-center justify-center rounded-2xl border border-ft-ink bg-transparent">
-          <Text className="font-body-bold text-sm text-ft-ink">Adicionar item</Text>
-        </Pressable>
-      </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -202,14 +344,33 @@ function MealItemRow({ item, foodName }: { item: MealItem; foodName: string }) {
     fat: item.fat,
   });
   const caloriesLabel = formatItemCalories(item.calories);
+  const isEstimated = isEstimatedMealItem(item);
 
   return (
     <View className="flex-row items-center justify-between rounded-2xl bg-ft-card px-4 py-3">
       <View className="flex-1 gap-0.5">
-        <Text className="font-body-semibold text-sm text-ft-ink">{foodName}</Text>
+        <View className="flex-row items-center gap-2">
+          <Text className="shrink font-body-semibold text-sm text-ft-ink">{foodName}</Text>
+          {isEstimated && (
+            <View className="rounded-full bg-ft-protein px-2 py-0.5">
+              <Text className="font-body-bold text-[9px] uppercase tracking-widest text-white">IA</Text>
+            </View>
+          )}
+        </View>
         <Text className="font-body text-xs text-ft-muted-2">{macroSummaryLabel}</Text>
       </View>
       <Text className="ml-3 font-body-bold text-sm text-ft-ink">{caloriesLabel}</Text>
+    </View>
+  );
+}
+
+function MealCaptureCard({ capture }: { capture: MealCapture }) {
+  return (
+    <View className="gap-3 rounded-2xl bg-ft-card p-3">
+      {capture.photoUrl !== null && (
+        <Image source={{ uri: capture.photoUrl }} contentFit="cover" style={{ width: '100%', aspectRatio: 4 / 3, borderRadius: 14 }} />
+      )}
+      {capture.description !== null && <Text className="px-1 font-body-medium text-sm text-ft-ink">{capture.description}</Text>}
     </View>
   );
 }

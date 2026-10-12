@@ -31,6 +31,14 @@
       "expo-router",
       "@react-native-google-signin/google-signin",
       [
+        "expo-image-picker",
+        {
+          "cameraPermission": "O Food Track usa a câmera para fotografar o seu prato e estimar a refeição.",
+          "photosPermission": "O Food Track acessa suas fotos para estimar a refeição de uma foto do prato.",
+          "microphonePermission": false
+        }
+      ],
+      [
         "expo-splash-screen",
         {
           "backgroundColor": "#DCEAF8",

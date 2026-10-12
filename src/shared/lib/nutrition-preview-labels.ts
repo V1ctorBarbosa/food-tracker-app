@@ -1,4 +1,10 @@
-import type { NutritionPreview } from '@/pages/add-food/model/nutrition-preview';
+/** Calories and macros for an amount of something eaten, before or after it is saved. */
+export type NutritionPreview = {
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+};
 
 export type NutritionPreviewLabels = {
   calories: string;

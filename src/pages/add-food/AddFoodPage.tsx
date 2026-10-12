@@ -5,29 +5,31 @@ import Animated, { FadeIn, FadeOut, LinearTransition } from 'react-native-reanim
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { Food } from '@/entities/food';
-import { getMeasurementUnitLabel, useCreateCustomFoodMutation, useFoodSearchQuery } from '@/entities/food';
+import { calculateNutritionForQuantity, getMeasurementUnitLabel, useCreateCustomFoodMutation, useFoodSearchQuery } from '@/entities/food';
 import {
   getMealTypeLabel,
   useCreateMealMutation,
   useMealQuery,
   useUpdateMealMutation,
+  toMealItemRequest,
   type MealItemRequest,
   type MealType,
 } from '@/entities/meal';
 import { buildLoggedAt, useSelectedDay } from '@/entities/selected-day';
-import { CustomFoodForm, EmptyCustomFoodFields, type CustomFoodValues } from '@/features/custom-food-form';
-import { resolveAddFoodBackLabel } from '@/pages/add-food/model/add-food-back-label';
-import { calculateNutritionForQuantity, type NutritionPreview } from '@/pages/add-food/model/nutrition-preview';
+import { CustomFoodForm, EmptyCustomFoodFields, type CustomFoodFormFields, type CustomFoodValues } from '@/features/custom-food-form';
+import { filterFoodsByKind, getFoodKindView, parseFoodKind } from '@/pages/add-food/model/food-kind';
 import { isSelectedFoodMissingFromResults } from '@/pages/add-food/model/selected-food-row';
 import { FoodRow } from '@/pages/add-food/ui/FoodRow';
-import { QuantityPanel } from '@/pages/add-food/ui/QuantityPanel';
+import { QuantityPanel } from '@/shared/ui/QuantityPanel';
 import { useThemeColors } from '@/shared/config/theme';
+import type { NutritionPreview } from '@/shared/lib/nutrition-preview-labels';
 import { MotionDurationMs } from '@/shared/lib/motion';
 import { parseDecimalInput } from '@/shared/lib/parse-decimal';
 import { BackPill } from '@/shared/ui/BackPill';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { LoadingBar } from '@/shared/ui/LoadingBar';
 
+const BackLabel = 'Voltar';
 const QuantityStep = 10;
 const MinimumQuantity = 1;
 
@@ -39,7 +41,9 @@ export function AddFoodPage() {
   const router = useRouter();
   const colors = useThemeColors();
   const { day } = useSelectedDay();
-  const { mealType, mealId } = useLocalSearchParams<{ mealType: MealType; mealId?: string }>();
+  const { mealType, mealId, kind } = useLocalSearchParams<{ mealType: MealType; mealId?: string; kind?: string }>();
+  const foodKind = parseFoodKind(kind);
+  const foodKindView = getFoodKindView(foodKind);
   const [searchText, setSearchText] = useState('');
   const [selectedFood, setSelectedFood] = useState<Food | null>(null);
   const [quantity, setQuantity] = useState(100);
@@ -119,19 +123,15 @@ export function AddFoodPage() {
     };
 
     if (isAppendMode && mealId !== undefined && existingMealQuery.data !== undefined) {
-      const existingItems: MealItemRequest[] = existingMealQuery.data.items.map((item) => ({
-        foodId: item.foodId,
-        quantity: item.quantity,
-        unit: item.unit,
-      }));
+      const existingItems = existingMealQuery.data.items.map(toMealItemRequest);
 
       await updateMealMutation.mutateAsync({
         id: mealId,
         request: { mealType: existingMealQuery.data.mealType, items: [...existingItems, newItem] },
       });
-      // The meal's detail screen is already open underneath: going back reuses it (its query was
-      // just invalidated) instead of stacking another copy of it for every item added.
-      router.back();
+      // The meal's detail screen is already open underneath the add-meal choices: going back to it
+      // reuses it (its query was just invalidated) instead of stacking another copy for every item added.
+      router.dismissTo({ pathname: '/meal/[id]', params: { id: mealId } });
       return;
     }
 
@@ -148,14 +148,20 @@ export function AddFoodPage() {
     preview = calculateNutritionForQuantity(selectedFood, quantity);
   }
 
-  const showSelectedFoodRow = isSelectedFoodMissingFromResults(selectedFood, foodSearchQuery.data);
+  let foodsOfKind: Food[] | undefined;
+  if (foodSearchQuery.data !== undefined) {
+    foodsOfKind = filterFoodsByKind(foodSearchQuery.data, foodKind);
+  }
+
+  const showSelectedFoodRow = isSelectedFoodMissingFromResults(selectedFood, foodsOfKind);
+  const customFoodInitialFields: CustomFoodFormFields = { ...EmptyCustomFoodFields, baseUnitType: foodKindView.customFoodBaseUnit };
 
   let customFoodToggleLabel = 'Adicionar alimento personalizado';
   if (isCustomFoodFormVisible) {
     customFoodToggleLabel = 'Cancelar alimento personalizado';
   }
 
-  const backLabel = resolveAddFoodBackLabel(isAppendMode);
+  const backLabel = BackLabel;
 
   return (
     <SafeAreaView className="flex-1 bg-ft-bg">
@@ -170,13 +176,13 @@ export function AddFoodPage() {
           contentContainerClassName="gap-4 px-7 pt-4 pb-4"
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}>
-          <Text className="font-display text-4xl uppercase text-ft-ink">Adicionar alimento</Text>
+          <Text className="font-display text-4xl uppercase text-ft-ink">{foodKindView.title}</Text>
 
           <TextInput
             autoFocus
             value={searchText}
             onChangeText={handleChangeSearchText}
-            placeholder="Buscar alimentos..."
+            placeholder={foodKindView.searchPlaceholder}
             placeholderTextColor={colors.textMuted3}
             className="h-[54px] rounded-2xl border-0 bg-ft-card px-5 font-body-medium text-base text-ft-ink outline-none"
           />
@@ -189,7 +195,7 @@ export function AddFoodPage() {
             <Animated.View entering={AppearTransition} exiting={DisappearTransition} layout={ReflowTransition}>
               <CustomFoodForm
                 title="Novo alimento"
-                initialFields={EmptyCustomFoodFields}
+                initialFields={customFoodInitialFields}
                 submitLabel="Salvar"
                 isSaving={createCustomFoodMutation.isPending}
                 errorMessage={customFoodErrorMessage}
@@ -200,7 +206,7 @@ export function AddFoodPage() {
 
           {selectedFood !== null && showSelectedFoodRow && (
             <Animated.View entering={AppearTransition} exiting={DisappearTransition} layout={ReflowTransition} className="gap-2">
-              <Text className="font-body-bold text-[10px] uppercase tracking-widest text-ft-muted-2">Alimento selecionado</Text>
+              <Text className="font-body-bold text-[10px] uppercase tracking-widest text-ft-muted-2">{foodKindView.selectedLabel}</Text>
               <FoodRow food={selectedFood} isSelected onPress={handleSelectFood} />
             </Animated.View>
           )}
@@ -208,6 +214,7 @@ export function AddFoodPage() {
           <Animated.View layout={ReflowTransition}>
             <FoodSearchResults
               query={foodSearchQuery}
+              foods={foodsOfKind}
               searchText={searchText}
               selectedFoodId={selectedFood?.id ?? null}
               onSelectFood={handleSelectFood}
@@ -250,13 +257,16 @@ export function AddFoodPage() {
   );
 }
 
+/** `foods` is the search's results already narrowed to the kind being searched (foods or drinks). */
 function FoodSearchResults({
   query,
+  foods,
   searchText,
   selectedFoodId,
   onSelectFood,
 }: {
   query: ReturnType<typeof useFoodSearchQuery>;
+  foods: Food[] | undefined;
   searchText: string;
   selectedFoodId: string | null;
   onSelectFood: (food: Food) => void;
@@ -273,18 +283,20 @@ function FoodSearchResults({
     return <ErrorMessage message="Não foi possível buscar alimentos agora." />;
   }
 
-  if (query.data === undefined) {
+  if (foods === undefined) {
     return null;
   }
 
-  if (query.data.length === 0) {
-    return <Text className="font-body text-sm text-ft-muted-2">Nenhum alimento encontrado para &quot;{searchText}&quot;.</Text>;
+  if (foods.length === 0) {
+    return <Text className="font-body text-sm text-ft-muted-2">Nada encontrado para &quot;{searchText}&quot;.</Text>;
   }
+
+  const resultCountLabel = `${foods.length} resultados`;
 
   return (
     <View className="gap-2">
-      <Text className="font-body-bold text-[10px] uppercase tracking-widest text-ft-muted-2">{query.data.length} resultados</Text>
-      {query.data.map((food) => (
+      <Text className="font-body-bold text-[10px] uppercase tracking-widest text-ft-muted-2">{resultCountLabel}</Text>
+      {foods.map((food) => (
         <FoodRow key={food.id} food={food} isSelected={food.id === selectedFoodId} onPress={onSelectFood} />
       ))}
     </View>

@@ -27,6 +27,7 @@ describe('fetchProfileOrNull', () => {
       dailyProteinTargetGrams: 150,
       dailyCarbsTargetGrams: 220,
       dailyFatTargetGrams: 70,
+      canEstimateMeals: false,
     };
     jest.spyOn(httpClient, 'getJson').mockResolvedValue(profile);
 
