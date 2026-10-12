@@ -8,25 +8,29 @@ import type { NutritionPreview } from '@/pages/add-food/model/nutrition-preview'
  * page's scroll area so it stays in view, right above the keyboard, while the amount is being typed.
  */
 export function QuantityPanel({
-  quantityGrams,
+  quantity,
+  unitLabel,
   preview,
   onAdjustQuantity,
   onChangeQuantityText,
-  stepGrams,
+  step,
 }: {
-  quantityGrams: number;
+  quantity: number;
+  unitLabel: string;
   preview: NutritionPreview;
-  onAdjustQuantity: (deltaGrams: number) => void;
+  onAdjustQuantity: (delta: number) => void;
   onChangeQuantityText: (text: string) => void;
-  stepGrams: number;
+  step: number;
 }) {
+  const quantityText = String(quantity);
+
   return (
     <View className="gap-3 rounded-[22px] bg-ft-calories p-4">
       <View className="flex-row items-center justify-between">
         <Text className="font-body-bold text-xs uppercase tracking-widest text-blue-200">Quantidade</Text>
         <View className="flex-row items-center gap-5">
           <Pressable
-            onPress={() => onAdjustQuantity(-stepGrams)}
+            onPress={() => onAdjustQuantity(-step)}
             hitSlop={12}
             accessibilityRole="button"
             accessibilityLabel="Diminuir quantidade"
@@ -35,16 +39,16 @@ export function QuantityPanel({
           </Pressable>
           <View className="flex-row items-baseline gap-1.5">
             <TextInput
-              value={String(quantityGrams)}
+              value={quantityText}
               onChangeText={onChangeQuantityText}
               keyboardType="numeric"
               selectTextOnFocus
               className="w-20 border-0 text-center font-display text-4xl text-white outline-none"
             />
-            <Text className="font-body-semibold text-sm text-blue-200">g</Text>
+            <Text className="font-body-semibold text-sm text-blue-200">{unitLabel}</Text>
           </View>
           <Pressable
-            onPress={() => onAdjustQuantity(stepGrams)}
+            onPress={() => onAdjustQuantity(step)}
             hitSlop={12}
             accessibilityRole="button"
             accessibilityLabel="Aumentar quantidade"

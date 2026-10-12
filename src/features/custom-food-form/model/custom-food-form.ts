@@ -1,3 +1,4 @@
+import type { CustomFoodBaseUnit } from '@/entities/food';
 import { parseDecimalInput } from '@/shared/lib/parse-decimal';
 
 export type CustomFoodFormFields = {
@@ -6,6 +7,7 @@ export type CustomFoodFormFields = {
   protein: string;
   carbs: string;
   fat: string;
+  baseUnitType: CustomFoodBaseUnit;
 };
 
 export type CustomFoodValues = {
@@ -14,6 +16,7 @@ export type CustomFoodValues = {
   protein: number;
   carbs: number;
   fat: number;
+  baseUnitType: CustomFoodBaseUnit;
 };
 
 /** The typed fields as numbers, or null unless the name is filled in and every macro is a number (comma or dot). */
@@ -28,7 +31,7 @@ export function parseCustomFoodFields(fields: CustomFoodFormFields): CustomFoodV
     return null;
   }
 
-  return { name, calories, protein, carbs, fat };
+  return { name, calories, protein, carbs, fat, baseUnitType: fields.baseUnitType };
 }
 
 export function isCustomFoodFormValid(fields: CustomFoodFormFields): boolean {

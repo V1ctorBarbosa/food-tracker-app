@@ -95,7 +95,7 @@ export function MealDetailPage() {
   async function handleRemoveItem(itemToRemove: MealItem) {
     const remainingItems: MealItemRequest[] = meal.items
       .filter((item) => item.id !== itemToRemove.id)
-      .map((item) => ({ foodId: item.foodId, quantity: item.quantity, unit: item.unit, foodServingId: null, servingCount: null }));
+      .map((item) => ({ foodId: item.foodId, quantity: item.quantity, unit: item.unit }));
 
     if (remainingItems.length === 0) {
       await deleteMealMutation.mutateAsync(meal.id);

@@ -11,7 +11,6 @@ const chickenBreastRaw: Food = {
   proteinPerBaseUnit: 31,
   carbsPerBaseUnit: 0,
   fatPerBaseUnit: 3.6,
-  servings: [],
 };
 
 describe('calculateNutritionForQuantity', () => {
@@ -35,5 +34,22 @@ describe('calculateNutritionForQuantity', () => {
     const result = calculateNutritionForQuantity(chickenBreastRaw, 0);
 
     expect(result).toEqual({ calories: 0, protein: 0, carbs: 0, fat: 0 });
+  });
+
+  it('scales a drink by milliliters: a 350 ml can of a 42 kcal/100 ml soda is 147 kcal', () => {
+    const cocaCola = {
+      ...chickenBreastRaw,
+      name: 'Coca-Cola',
+      baseUnitType: 'Milliliter' as const,
+      caloriesPerBaseUnit: 42,
+      proteinPerBaseUnit: 0,
+      carbsPerBaseUnit: 10.5,
+      fatPerBaseUnit: 0,
+    };
+
+    const result = calculateNutritionForQuantity(cocaCola, 350);
+
+    expect(result.calories).toBe(147);
+    expect(result.carbs).toBeCloseTo(36.75, 5);
   });
 });

@@ -1,13 +1,34 @@
-import { getMeasurementUnitLabel } from './measurement-unit-labels';
+import { getMeasurementUnitLabel, isDrinkUnit, toCustomFoodBaseUnit } from './measurement-unit-labels';
 
 describe('getMeasurementUnitLabel', () => {
-  test('abbreviates Gram to g', () => {
-    expect(getMeasurementUnitLabel('Gram')).toBe('g');
+  test.each([
+    ['Gram', 'g'],
+    ['Kilogram', 'kg'],
+    ['Milliliter', 'ml'],
+    ['Liter', 'L'],
+  ] as const)('shows %s as %s', (unit, expectedLabel) => {
+    expect(getMeasurementUnitLabel(unit)).toBe(expectedLabel);
   });
+});
 
-  test('lowercases every other unit', () => {
-    expect(getMeasurementUnitLabel('Kilogram')).toBe('kilogram');
-    expect(getMeasurementUnitLabel('Milliliter')).toBe('milliliter');
-    expect(getMeasurementUnitLabel('Liter')).toBe('liter');
+describe('isDrinkUnit', () => {
+  test.each([
+    ['Milliliter', true],
+    ['Liter', true],
+    ['Gram', false],
+    ['Kilogram', false],
+  ] as const)('%s is a drink unit: %s', (unit, expected) => {
+    expect(isDrinkUnit(unit)).toBe(expected);
+  });
+});
+
+describe('toCustomFoodBaseUnit', () => {
+  test.each([
+    ['Milliliter', 'Milliliter'],
+    ['Liter', 'Milliliter'],
+    ['Gram', 'Gram'],
+    ['Kilogram', 'Gram'],
+  ] as const)('turns %s into %s', (unit, expectedBaseUnit) => {
+    expect(toCustomFoodBaseUnit(unit)).toBe(expectedBaseUnit);
   });
 });

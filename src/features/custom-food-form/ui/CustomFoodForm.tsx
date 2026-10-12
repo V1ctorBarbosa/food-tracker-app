@@ -1,12 +1,18 @@
 import { useState } from 'react';
 import { ActivityIndicator, Pressable, Text, TextInput, View } from 'react-native';
 
+import type { CustomFoodBaseUnit } from '@/entities/food';
 import { useThemeColors } from '@/shared/config/theme';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
+import { SelectionChip } from '@/shared/ui/SelectionChip';
 
 import { parseCustomFoodFields, type CustomFoodFormFields, type CustomFoodValues } from '../model/custom-food-form';
+import { CustomFoodKindOptions, formatCustomFoodFormTitle } from '../model/custom-food-kind';
 
-/** The name and per-100 g nutrition fields shared by "new custom food" and "edit custom food". */
+/**
+ * The name, kind (food per 100 g or drink per 100 ml) and nutrition fields shared by
+ * "new custom food" and "edit custom food".
+ */
 export function CustomFoodForm({
   title,
   initialFields,
@@ -27,8 +33,14 @@ export function CustomFoodForm({
   const parsedValues = parseCustomFoodFields(fields);
   const canSubmit = parsedValues !== null && !isSaving;
 
-  function handleChangeField(fieldName: keyof CustomFoodFormFields, text: string) {
+  const formTitle = formatCustomFoodFormTitle(title, fields.baseUnitType);
+
+  function handleChangeField(fieldName: Exclude<keyof CustomFoodFormFields, 'baseUnitType'>, text: string) {
     setFields((previous) => ({ ...previous, [fieldName]: text }));
+  }
+
+  function handleSelectBaseUnit(baseUnitType: CustomFoodBaseUnit) {
+    setFields((previous) => ({ ...previous, baseUnitType }));
   }
 
   function handlePressSubmit() {
@@ -41,7 +53,18 @@ export function CustomFoodForm({
 
   return (
     <View className="gap-3 rounded-[22px] bg-ft-card p-5">
-      <Text className="font-body-bold text-xs uppercase tracking-widest text-ft-muted-2">{title}</Text>
+      <Text className="font-body-bold text-xs uppercase tracking-widest text-ft-muted-2">{formTitle}</Text>
+      <View className="flex-row gap-2" accessibilityRole="radiogroup">
+        {CustomFoodKindOptions.map((option) => (
+          <SelectionChip
+            key={option.baseUnitType}
+            label={option.label}
+            color={colors.calories}
+            isSelected={option.baseUnitType === fields.baseUnitType}
+            onPress={() => handleSelectBaseUnit(option.baseUnitType)}
+          />
+        ))}
+      </View>
       <TextInput
         value={fields.name}
         onChangeText={(text) => handleChangeField('name', text)}
