@@ -18,6 +18,14 @@ describe('resolveEstimateErrorMessage', () => {
     expect(resolveEstimateErrorMessage(error)).toContain('última hora');
   });
 
+  test('tells the user the monthly limit was reached and when estimates come back', () => {
+    const error = new ApiError(429, 'The monthly limit of AI meal estimates has been reached.', MealEstimateErrorCode.monthlyLimitReached);
+
+    expect(resolveEstimateErrorMessage(error)).toBe(
+      'O limite de estimativas por IA deste mês acabou. Elas voltam no dia 1º; até lá, registre por Alimentos ou Bebidas.',
+    );
+  });
+
   test('falls back to a generic message for an unknown error code', () => {
     const error = new ApiError(500, 'Boom', 'UnexpectedError');
 

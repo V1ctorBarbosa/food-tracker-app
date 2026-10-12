@@ -6,6 +6,7 @@ export const MealEstimateErrorCode = {
   noFoodRecognized: 'NoFoodRecognized',
   estimateUnavailable: 'EstimateUnavailable',
   tooManyRequests: 'TooManyRequests',
+  monthlyLimitReached: 'MonthlyEstimateLimitReached',
 } as const;
 
 const MessageByErrorCode: Record<string, string> = {
@@ -13,6 +14,8 @@ const MessageByErrorCode: Record<string, string> = {
   [MealEstimateErrorCode.noFoodRecognized]: 'Não encontramos comida aqui. Tente outra foto ou descreva a refeição.',
   [MealEstimateErrorCode.estimateUnavailable]: 'Não foi possível calcular agora. Tente de novo em instantes.',
   [MealEstimateErrorCode.tooManyRequests]: 'Você fez muitas estimativas na última hora. Tente de novo mais tarde.',
+  [MealEstimateErrorCode.monthlyLimitReached]:
+    'O limite de estimativas por IA deste mês acabou. Elas voltam no dia 1º; até lá, registre por Alimentos ou Bebidas.',
 };
 
 const FallbackMessage = 'Não foi possível calcular essa refeição. Tente novamente.';
