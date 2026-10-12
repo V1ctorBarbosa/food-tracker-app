@@ -1,11 +1,11 @@
 import { Pressable, Text, TextInput, View } from 'react-native';
 
-import { formatNutritionPreviewLabels } from '@/pages/add-food/model/nutrition-preview-labels';
-import type { NutritionPreview } from '@/pages/add-food/model/nutrition-preview';
+import { formatNutritionPreviewLabels, type NutritionPreview } from '@/shared/lib/nutrition-preview-labels';
 
 /**
- * The quantity stepper and live nutrition preview for the selected food. It is rendered outside the
- * page's scroll area so it stays in view, right above the keyboard, while the amount is being typed.
+ * The quantity stepper and live nutrition preview for an amount being logged or edited. It is
+ * rendered outside the page's scroll area so it stays in view, right above the keyboard, while the
+ * amount is being typed.
  */
 export function QuantityPanel({
   quantity,

@@ -77,7 +77,7 @@ export default function RootLayout() {
                 <Stack.Screen name="(tabs)" options={{ animation: 'fade' }} />
                 <Stack.Screen name="sign-in" options={{ animation: 'fade' }} />
                 <Stack.Screen name="onboarding" options={{ animation: 'fade' }} />
-                <Stack.Screen name="add-food" options={{ animation: 'slide_from_bottom' }} />
+                <Stack.Screen name="add-meal" options={{ animation: 'slide_from_bottom' }} />
                 <Stack.Screen
                   name="day-picker"
                   options={{ presentation: 'transparentModal', animation: 'none', contentStyle: { backgroundColor: 'transparent' } }}

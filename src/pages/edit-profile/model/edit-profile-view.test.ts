@@ -21,6 +21,7 @@ describe('buildFormValuesFromProfile', () => {
       dailyProteinTargetGrams: 140,
       dailyCarbsTargetGrams: 220,
       dailyFatTargetGrams: 65,
+      canEstimateMeals: true,
     };
 
     expect(buildFormValuesFromProfile(profile)).toEqual({

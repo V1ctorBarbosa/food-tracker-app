@@ -1,4 +1,71 @@
-import { calculateMacroSharePercents, formatItemCalories, formatItemCountLabel, formatMealItemMacros } from './meal-item-view';
+import type { MealCapture, MealItem } from '@/entities/meal';
+
+import {
+  adjustItemQuantity,
+  findMealItem,
+  selectCapturesToShow,
+  calculateMacroSharePercents,
+  formatItemCalories,
+  formatItemCountLabel,
+  formatMealItemMacros,
+  MinimumItemQuantity,
+  parseItemQuantity,
+} from './meal-item-view';
+
+const riceItem: MealItem = {
+  id: 'item-rice',
+  foodId: 'food-rice',
+  quantity: 200,
+  unit: 'Gram',
+  calories: 260,
+  protein: 5.4,
+  carbs: 56,
+  fat: 0.6,
+  estimatedFood: null,
+};
+
+describe('selectCapturesToShow', () => {
+  test('keeps captures with a photo or a description and drops empty ones', () => {
+    const withPhoto: MealCapture = { id: 'a', hasPhoto: true, description: null, photoUrl: 'https://photos.example.test/a.jpg' };
+    const withDescription: MealCapture = { id: 'b', hasPhoto: false, description: 'um copo de suco', photoUrl: null };
+    const empty: MealCapture = { id: 'c', hasPhoto: true, description: null, photoUrl: null };
+
+    expect(selectCapturesToShow([withPhoto, withDescription, empty])).toEqual([withPhoto, withDescription]);
+  });
+});
+
+describe('findMealItem', () => {
+  test('finds the item being edited', () => {
+    expect(findMealItem([riceItem], 'item-rice')).toBe(riceItem);
+  });
+
+  test('has nothing when no item is being edited or it is gone', () => {
+    expect(findMealItem([riceItem], undefined)).toBeNull();
+    expect(findMealItem([riceItem], 'item-gone')).toBeNull();
+  });
+});
+
+describe('adjustItemQuantity', () => {
+  test('steps the quantity up and down', () => {
+    expect(adjustItemQuantity(150, 10)).toBe(160);
+    expect(adjustItemQuantity(150, -10)).toBe(140);
+  });
+
+  test('never goes below the minimum', () => {
+    expect(adjustItemQuantity(5, -10)).toBe(MinimumItemQuantity);
+  });
+});
+
+describe('parseItemQuantity', () => {
+  test('keeps a typed amount at or above the minimum', () => {
+    expect(parseItemQuantity(300)).toBe(300);
+    expect(parseItemQuantity(0)).toBe(MinimumItemQuantity);
+  });
+
+  test('has nothing while the text is not a number yet', () => {
+    expect(parseItemQuantity(null)).toBeNull();
+  });
+});
 
 describe('formatMealItemMacros', () => {
   test('spells the macros out in full words, in whole grams', () => {
