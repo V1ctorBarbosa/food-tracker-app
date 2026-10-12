@@ -20,7 +20,6 @@ function buildFood(overrides: Partial<Food>): Food {
     proteinPerBaseUnit: 24,
     carbsPerBaseUnit: 3,
     fatPerBaseUnit: 1.5,
-    servings: [],
     ...overrides,
   };
 }

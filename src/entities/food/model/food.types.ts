@@ -3,13 +3,6 @@ export type MeasurementUnit = 'Gram' | 'Kilogram' | 'Milliliter' | 'Liter';
 /** 'Usda' is retired (no longer queried live) but stays valid so an earlier-cached food still displays. */
 export type FoodSource = 'Usda' | 'OpenFoodFacts' | 'Custom' | 'Taco';
 
-export type FoodServing = {
-  id: string;
-  name: string;
-  quantity: number;
-  unit: MeasurementUnit;
-};
-
 export type Food = {
   id: string;
   name: string;
@@ -20,7 +13,6 @@ export type Food = {
   proteinPerBaseUnit: number;
   carbsPerBaseUnit: number;
   fatPerBaseUnit: number;
-  servings: FoodServing[];
 };
 
 /** A custom food is either a food, per 100 g, or a drink, per 100 ml. */

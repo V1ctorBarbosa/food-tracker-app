@@ -1,4 +1,4 @@
-export type { CreateCustomFoodRequest, CustomFoodBaseUnit, Food, FoodServing, FoodSource, MeasurementUnit, UpdateCustomFoodRequest } from './model/food.types';
+export type { CreateCustomFoodRequest, CustomFoodBaseUnit, Food, FoodSource, MeasurementUnit, UpdateCustomFoodRequest } from './model/food.types';
 export { getFoodSourceLabel } from './model/food-source-labels';
 export { getMeasurementUnitLabel, toCustomFoodBaseUnit } from './model/measurement-unit-labels';
 export { useCreateCustomFoodMutation } from './model/use-create-custom-food-mutation';

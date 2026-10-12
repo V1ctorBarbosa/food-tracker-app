@@ -11,7 +11,6 @@ const chickenBreastRaw: Food = {
   proteinPerBaseUnit: 31,
   carbsPerBaseUnit: 0,
   fatPerBaseUnit: 3.6,
-  servings: [],
 };
 
 describe('calculateNutritionForQuantity', () => {
