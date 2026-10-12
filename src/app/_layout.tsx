@@ -22,11 +22,13 @@ import { useRefetchOnAppFocus } from '@/shared/api/use-refetch-on-app-focus';
 import { useWarmUpApi } from '@/shared/api/warm-up-api';
 import { theme } from '@/shared/config/theme';
 import { withAppPalette } from '@/shared/lib/navigation-theme';
+import { registerAnimatedClassNames } from '@/shared/ui/animated-class-names';
 import { ThemeRoot } from '@/shared/ui/ThemeRoot';
 
 import '@/global.css';
 
 SplashScreen.preventAutoHideAsync();
+registerAnimatedClassNames();
 
 const lightNavigationTheme = withAppPalette(DefaultTheme, theme.light);
 const darkNavigationTheme = withAppPalette(DarkTheme, theme.dark);
