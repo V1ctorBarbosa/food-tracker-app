@@ -1,4 +1,5 @@
 import { ApiError } from '@/shared/api/http-client';
+import { PhotoUploadError } from '@/shared/api/signed-upload';
 
 /** The API's error codes for estimates, as GlobalExceptionHandler writes them. */
 export const MealEstimateErrorCode = {
@@ -19,9 +20,14 @@ const MessageByErrorCode: Record<string, string> = {
 };
 
 const FallbackMessage = 'Não foi possível calcular essa refeição. Tente novamente.';
+const PhotoUploadMessage = 'Não foi possível enviar a foto. Confira a conexão e tente de novo.';
 
 /** What to tell the user when an estimate fails, in their words rather than the API's. */
 export function resolveEstimateErrorMessage(error: unknown): string {
+  if (error instanceof PhotoUploadError) {
+    return PhotoUploadMessage;
+  }
+
   if (!(error instanceof ApiError) || error.errorCode === null) {
     return FallbackMessage;
   }
