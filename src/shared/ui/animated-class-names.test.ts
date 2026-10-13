@@ -15,10 +15,18 @@ jest.mock('react-native-reanimated', () => ({
 }));
 
 describe('registerAnimatedClassNames', () => {
+  test.each(['android', 'ios'] as const)('registers nothing on %s, where NativeWind already styles Reanimated components', (platform) => {
+    const register = jest.fn();
+
+    registerAnimatedClassNames(register, platform);
+
+    expect(register).not.toHaveBeenCalled();
+  });
+
   test('maps className to style on Animated.View and Animated.Text', () => {
     const register = jest.fn();
 
-    registerAnimatedClassNames(register);
+    registerAnimatedClassNames(register, 'web');
 
     expect(register).toHaveBeenCalledWith(Animated.View, { className: 'style' });
     expect(register).toHaveBeenCalledWith(Animated.Text, { className: 'style' });
@@ -27,7 +35,7 @@ describe('registerAnimatedClassNames', () => {
   test('maps both className and contentContainerClassName on Animated.ScrollView', () => {
     const register = jest.fn();
 
-    registerAnimatedClassNames(register);
+    registerAnimatedClassNames(register, 'web');
 
     expect(register).toHaveBeenCalledWith(Animated.ScrollView, {
       className: 'style',
@@ -38,7 +46,7 @@ describe('registerAnimatedClassNames', () => {
   test('registers every Reanimated component exactly once', () => {
     const register = jest.fn();
 
-    registerAnimatedClassNames(register);
+    registerAnimatedClassNames(register, 'web');
 
     const registeredComponents = register.mock.calls.map(([component]) => component);
     expect(new Set(registeredComponents).size).toBe(registeredComponents.length);
