@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 
 import { formatNutritionPreviewLabels, type NutritionPreview } from '@/shared/lib/nutrition-preview-labels';
+import { resolveQuantityInputText } from '@/shared/lib/quantity-input';
 
 /**
  * The quantity stepper and live nutrition preview for an amount being logged or edited. It is
@@ -22,7 +24,18 @@ export function QuantityPanel({
   onChangeQuantityText: (text: string) => void;
   step: number;
 }) {
-  const quantityText = String(quantity);
+  const [draftText, setDraftText] = useState<string | null>(null);
+  const quantityText = resolveQuantityInputText(draftText, quantity);
+
+  function handleChangeText(text: string) {
+    setDraftText(text);
+    onChangeQuantityText(text);
+  }
+
+  function handlePressStep(delta: number) {
+    setDraftText(null);
+    onAdjustQuantity(delta);
+  }
 
   return (
     <View className="gap-3 rounded-[22px] bg-ft-calories p-4">
@@ -30,7 +43,7 @@ export function QuantityPanel({
         <Text className="font-body-bold text-xs uppercase tracking-widest text-blue-200">Quantidade</Text>
         <View className="flex-row items-center gap-5">
           <Pressable
-            onPress={() => onAdjustQuantity(-step)}
+            onPress={() => handlePressStep(-step)}
             hitSlop={12}
             accessibilityRole="button"
             accessibilityLabel="Diminuir quantidade"
@@ -40,7 +53,8 @@ export function QuantityPanel({
           <View className="flex-row items-baseline gap-1.5">
             <TextInput
               value={quantityText}
-              onChangeText={onChangeQuantityText}
+              onChangeText={handleChangeText}
+              onBlur={() => setDraftText(null)}
               keyboardType="numeric"
               selectTextOnFocus
               className="w-20 border-0 text-center font-display text-4xl text-white outline-none"
@@ -48,7 +62,7 @@ export function QuantityPanel({
             <Text className="font-body-semibold text-sm text-blue-200">{unitLabel}</Text>
           </View>
           <Pressable
-            onPress={() => onAdjustQuantity(step)}
+            onPress={() => handlePressStep(step)}
             hitSlop={12}
             accessibilityRole="button"
             accessibilityLabel="Aumentar quantidade"
