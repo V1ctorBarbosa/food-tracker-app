@@ -1,30 +1,57 @@
-import { uploadFileToSignedUrl } from './signed-upload';
+import { fetch } from 'expo/fetch';
+import { File } from 'expo-file-system';
+
+import { PhotoUploadError, uploadFileToSignedUrl } from './signed-upload';
+
+jest.mock('expo/fetch', () => ({ fetch: jest.fn() }));
+jest.mock('expo-file-system', () => ({
+  File: jest.fn().mockImplementation((uri: string) => ({ uri })),
+}));
+
+const fetchMock = fetch as jest.MockedFunction<typeof fetch>;
+const FileMock = File as unknown as jest.Mock;
+
+const UploadUrl = 'https://bucket.example.test/pending/photo.jpg?signature=abc';
+const PhotoUri = 'file:///data/user/0/cache/photo.jpg';
+
+type UploadResponse = Awaited<ReturnType<typeof fetch>>;
+
+/** Only ok and status are read from the response, so the rest of Expo's response is left out. */
+function createUploadResponse(ok: boolean, status: number): UploadResponse {
+  return { ok, status } as unknown as UploadResponse;
+}
 
 describe('uploadFileToSignedUrl', () => {
-  const photoBlob = new Blob(['jpeg bytes'], { type: 'image/jpeg' });
-  let fetchMock: jest.Mock;
-
   beforeEach(() => {
-    fetchMock = jest.fn();
-    global.fetch = fetchMock;
+    fetchMock.mockReset();
+    FileMock.mockClear();
   });
 
-  test('puts the file to the signed url with exactly the headers it was given and no bearer token', async () => {
-    fetchMock.mockResolvedValueOnce({ blob: async () => photoBlob }).mockResolvedValueOnce({ ok: true, status: 200 });
+  test('puts the local file itself as the body, with exactly the headers it was given and no bearer token', async () => {
+    fetchMock.mockResolvedValue(createUploadResponse(true, 200));
 
-    await uploadFileToSignedUrl('https://bucket.example.test/pending/photo.jpg?signature=abc', { 'Content-Type': 'image/jpeg' }, 'file:///photo.jpg');
+    await uploadFileToSignedUrl(UploadUrl, { 'Content-Type': 'image/jpeg' }, PhotoUri);
 
-    expect(fetchMock).toHaveBeenNthCalledWith(1, 'file:///photo.jpg');
-    expect(fetchMock).toHaveBeenNthCalledWith(2, 'https://bucket.example.test/pending/photo.jpg?signature=abc', {
+    expect(FileMock).toHaveBeenCalledWith(PhotoUri);
+    expect(fetchMock).toHaveBeenCalledWith(UploadUrl, {
       method: 'PUT',
       headers: { 'Content-Type': 'image/jpeg' },
-      body: photoBlob,
+      body: { uri: PhotoUri },
     });
   });
 
-  test('fails when the storage rejects the upload', async () => {
-    fetchMock.mockResolvedValueOnce({ blob: async () => photoBlob }).mockResolvedValueOnce({ ok: false, status: 403 });
+  test('fails with the status when the storage rejects the upload', async () => {
+    fetchMock.mockResolvedValue(createUploadResponse(false, 403));
 
-    await expect(uploadFileToSignedUrl('https://bucket.example.test/upload', {}, 'file:///photo.jpg')).rejects.toThrow('403');
+    const upload = uploadFileToSignedUrl(UploadUrl, {}, PhotoUri);
+
+    await expect(upload).rejects.toBeInstanceOf(PhotoUploadError);
+    await expect(upload).rejects.toMatchObject({ status: 403 });
+  });
+
+  test('fails as an upload error when the request cannot be sent at all', async () => {
+    fetchMock.mockRejectedValue(new TypeError('Network request failed'));
+
+    await expect(uploadFileToSignedUrl(UploadUrl, {}, PhotoUri)).rejects.toBeInstanceOf(PhotoUploadError);
   });
 });
