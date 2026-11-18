@@ -1,56 +1,45 @@
-# Welcome to your Expo app 👋
+# Food Track
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Mobile-first app for logging meals, water and weight, and tracking calories and macronutrients against daily targets. Meals can be logged from a food catalog or **estimated by AI from a photo of the plate or a short description**, then reviewed item by item before saving.
 
-## Get started
+Built with **React Native, Expo and TypeScript**, for Android, iOS and web. The interface is in Brazilian Portuguese.
 
-1. Install dependencies
+> Backend (.NET / C#, DDD, AWS Lambda): [food-tracker-api](https://github.com/V1ctorBarbosa/food-tracker-api)
 
-   ```bash
-   npm install
-   ```
+## Highlights
 
-2. Start the app
+- **AI meal estimate.** Take or pick a photo (resized on device before upload), add an optional description, and get every ingredient back with its estimated quantity and nutrition. A review screen lets the user toggle items in or out and re-run the estimate with an edited description.
+- **Daily dashboard** with calorie and macronutrient progress, water intake and weight tracking, plus charts over time.
+- **Food catalog search** (TACO table, Open Food Facts) and custom foods; food in grams, drinks in milliliters.
+- **Feature-Sliced Design**: code organized by `app`, `pages`, `features`, `entities` and `shared` slices, each with a public API.
+- **Render-focused components.** Derived data (filtering, grouping, deltas, formatting) lives in plain `model/` functions next to each slice, so it is unit-tested without rendering anything.
+- **370+ tests** with Jest and React Native Testing Library.
 
-   ```bash
-   npx expo start
-   ```
+## Stack
 
-In the output, you'll find options to open the app in a
+| Concern | Choice |
+| --- | --- |
+| Framework | Expo (React Native), Expo Router |
+| Language | TypeScript |
+| Server state | TanStack Query |
+| Forms and validation | React Hook Form + Zod |
+| Styling | NativeWind (Tailwind), one centralized light/dark theme |
+| Animation | Reanimated: elements animate in and out instead of popping |
+| Auth | Google Sign-In + Firebase Auth, behind a project-defined `AuthGateway` port |
+| Tests | Jest, React Native Testing Library |
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+**Dependency inversion on the frontend too:** pages and features talk to an `AuthGateway` interface, and a single Firebase adapter implements it. Swapping the auth provider means writing one new adapter, not editing every screen.
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## How it is built
 
-## Get a fresh project
+Each feature starts as a written spec in the API repository ([docs/specs](https://github.com/V1ctorBarbosa/food-tracker-api/tree/master/docs/specs)) and is developed with Claude Code in a workflow of small reviewed changes, tests with every change and Conventional Commits. The AI writes alongside me; the design decisions and the review are mine.
 
-When you're ready, run:
+## Running locally
 
 ```bash
-npm run reset-project
+npm install
+npx expo start
+npm test
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-### Other setup steps
-
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+The app talks to the deployed API by default (`EXPO_PUBLIC_API_BASE_URL`). Google Sign-In needs a development build.
